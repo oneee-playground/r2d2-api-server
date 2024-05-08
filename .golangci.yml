@@ -1,0 +1,15 @@
+output:
+  sort-results: true
+  sort-order:
+    - severity
+    - file
+    - linter
+
+  show-stats: true
+
+linters:
+  enable-all: true
+
+  disable:
+    - execinquery
+    - gomnd
