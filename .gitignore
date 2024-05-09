@@ -1,0 +1,3 @@
+/internal/infra/data/ent/model/*
+!/internal/infra/data/ent/model/schema/
+!/internal/infra/data/ent/model/generate.go
