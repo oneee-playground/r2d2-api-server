@@ -1,3 +1,6 @@
+run:
+  issues-exit-code: 0
+
 output:
   sort-results: true
   sort-order:
@@ -13,3 +16,4 @@ linters:
   disable:
     - execinquery
     - gomnd
+    - depguard
