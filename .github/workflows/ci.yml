@@ -16,7 +16,7 @@ jobs:
           go-version: '1.22'
 
       - name: Install mockgen
-        run: go install go.uber.org/mock/mockgen@latest
+        run: go install github.com/golang/mock/mockgen@latest
 
       - name: Generate mocks
         run: make gen-mocks
@@ -35,7 +35,7 @@ jobs:
           go-version: '1.22'
           
       - name: Install mockgen
-        run: go install go.uber.org/mock/mockgen@latest
+        run: go install github.com/golang/mock/mockgen@latest
 
       - name: Generate mocks
         run: make gen-mocks
