@@ -14,6 +14,13 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: '1.22'
+
+      - name: Install mockgen
+        run: go install go.uber.org/mock/mockgen@latest
+
+      - name: Generate mocks
+        run: make gen-mocks
+
       - uses: golangci/golangci-lint-action@v6.0.0
         with:
           version: latest
@@ -26,6 +33,12 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: '1.22'
+          
+      - name: Install mockgen
+        run: go install go.uber.org/mock/mockgen@latest
+
+      - name: Generate mocks
+        run: make gen-mocks
       
       - name: Test with coverage
         run: make unit-test-cov COVER_OUT=unit.out
