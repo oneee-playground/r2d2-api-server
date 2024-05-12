@@ -8,6 +8,7 @@ import (
 	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
 	"github.com/oneee-playground/r2d2-api-server/internal/domain"
+	"github.com/oneee-playground/r2d2-api-server/internal/global/auth"
 	auth_module "github.com/oneee-playground/r2d2-api-server/internal/module/auth"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
@@ -44,7 +45,7 @@ func (s *JWTManagerSuite) TestIssue() {
 		},
 	}
 
-	payload := auth_module.TokenPayload{
+	payload := auth.Payload{
 		UserID: uuid.New(),
 		Role:   domain.RoleMember,
 	}
@@ -83,7 +84,7 @@ func (s *JWTManagerSuite) TestDecode() {
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(100 * time.Hour).Unix(),
 		},
-		TokenPayload: auth_module.TokenPayload{
+		Payload: auth.Payload{
 			UserID: uuid.New(),
 			Role:   domain.RoleAdmin,
 		},
@@ -145,7 +146,7 @@ func (s *JWTManagerSuite) TestDecode() {
 			}
 
 			s.NoError(err)
-			s.Equal(defaultClaims.TokenPayload, token.Payload)
+			s.Equal(defaultClaims.Payload, token.Payload)
 		})
 	}
 }

@@ -5,13 +5,14 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt"
+	"github.com/oneee-playground/r2d2-api-server/internal/global/auth"
 	auth_module "github.com/oneee-playground/r2d2-api-server/internal/module/auth"
 	"github.com/pkg/errors"
 )
 
 type jwtClaims struct {
 	jwt.StandardClaims
-	auth_module.TokenPayload
+	auth.Payload
 }
 
 type Manager struct {
@@ -31,12 +32,12 @@ func NewManager(method jwt.SigningMethod, secret any) *Manager {
 	}
 }
 
-func (m *Manager) Issue(ctx context.Context, payload auth_module.TokenPayload, exp time.Time) (auth_module.Token, error) {
+func (m *Manager) Issue(ctx context.Context, payload auth.Payload, exp time.Time) (auth_module.Token, error) {
 	claims := jwtClaims{
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: exp.Unix(),
 		},
-		TokenPayload: payload,
+		Payload: payload,
 	}
 
 	token := jwt.NewWithClaims(m.signingMethod, claims)
@@ -84,7 +85,7 @@ func (m *Manager) Decode(_ context.Context, raw string) (auth_module.Token, erro
 	}
 
 	authToken := auth_module.Token{
-		Payload:   claims.TokenPayload,
+		Payload:   claims.Payload,
 		ExpiresAt: time.Unix(claims.ExpiresAt, 0),
 		Raw:       raw,
 	}

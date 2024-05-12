@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/oneee-playground/r2d2-api-server/internal/domain"
 	"github.com/oneee-playground/r2d2-api-server/internal/domain/dto"
+	"github.com/oneee-playground/r2d2-api-server/internal/global/auth"
 	"github.com/oneee-playground/r2d2-api-server/internal/global/status"
 	"github.com/pkg/errors"
 )
@@ -65,7 +66,7 @@ func (uc *authUsecase) SignIn(ctx context.Context, in *dto.SignInInput) (out *dt
 		}
 	}
 
-	payload := TokenPayload{
+	payload := auth.Payload{
 		UserID: user.ID,
 		Role:   user.Role,
 	}
