@@ -1,6 +1,9 @@
 run:
   issues-exit-code: 0
 
+issues:
+  new: true
+
 output:
   sort-results: true
   sort-order:
