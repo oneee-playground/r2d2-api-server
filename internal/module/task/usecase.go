@@ -35,9 +35,10 @@ func (u *taskUsecase) GetList(ctx context.Context) (out *dto.TaskListOutput, err
 func (u *taskUsecase) GetTask(ctx context.Context, in dto.IDInput) (out *dto.TaskOutput, err error) {
 	task, err := u.taskRepository.FetchByID(ctx, in.ID)
 	if err != nil {
-		if err == domain.ErrTaskNotFound {
+		if errors.Is(err, domain.ErrTaskNotFound) {
 			return nil, status.NewErr(http.StatusNotFound, err.Error())
 		}
+
 		return nil, errors.Wrap(err, "fetching task by id")
 	}
 
@@ -62,9 +63,10 @@ func (u *taskUsecase) CreateTask(ctx context.Context, in dto.TaskInput) (out *dt
 func (u *taskUsecase) UpdateTask(ctx context.Context, in dto.UpdateTaskInput) (err error) {
 	task, err := u.taskRepository.FetchByID(ctx, in.ID)
 	if err != nil {
-		if err == domain.ErrTaskNotFound {
+		if errors.Is(err, domain.ErrTaskNotFound) {
 			return status.NewErr(http.StatusNotFound, err.Error())
 		}
+
 		return errors.Wrap(err, "fetching task by id")
 	}
 
@@ -81,9 +83,10 @@ func (u *taskUsecase) UpdateTask(ctx context.Context, in dto.UpdateTaskInput) (e
 func (u *taskUsecase) ChangeStage(ctx context.Context, in dto.TaskStageInput) (err error) {
 	task, err := u.taskRepository.FetchByID(ctx, in.ID)
 	if err != nil {
-		if err == domain.ErrTaskNotFound {
+		if errors.Is(err, domain.ErrTaskNotFound) {
 			return status.NewErr(http.StatusNotFound, err.Error())
 		}
+
 		return errors.Wrap(err, "fetching task by id")
 	}
 
