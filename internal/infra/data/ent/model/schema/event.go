@@ -16,8 +16,9 @@ type Event struct {
 func (Event) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Unique(),
-		field.Uint8("kind"),
+		field.String("kind"),
 		field.String("extra"),
+		field.Time("timestamp"),
 		field.UUID("submissionID", uuid.New()),
 	}
 }

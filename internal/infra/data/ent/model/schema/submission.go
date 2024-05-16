@@ -17,6 +17,9 @@ func (Submission) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Unique(),
 		field.Time("timestamp"),
+		field.Bool("isDone"),
+		field.String("repository"),
+		field.String("commitHash"),
 		field.UUID("userID", uuid.New()),
 		field.UUID("taskID", uuid.New()),
 	}
