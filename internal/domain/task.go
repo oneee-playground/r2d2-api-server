@@ -38,6 +38,7 @@ var (
 )
 
 type TaskRepository interface {
+	ExistsByID(ctx context.Context, id uuid.UUID) (bool, error)
 	FetchAll(ctx context.Context) ([]Task, error)
 	FetchByID(ctx context.Context, id uuid.UUID) (Task, error)
 	Create(ctx context.Context, task Task) error
