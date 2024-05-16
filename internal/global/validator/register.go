@@ -13,5 +13,12 @@ func RegisterTaskStage(v *validator.Validate) error {
 		return err
 	}
 
+	err = v.RegisterValidation("submission_action", func(fl validator.FieldLevel) bool {
+		return SubmissionAcitonValid(domain.SubmissionAction(fl.Field().String()))
+	})
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

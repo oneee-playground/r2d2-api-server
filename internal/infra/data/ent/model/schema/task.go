@@ -18,7 +18,7 @@ func (Task) Fields() []ent.Field {
 		field.UUID("id", uuid.New()).Unique(),
 		field.String("title"),
 		field.String("description"),
-		field.Uint8("stage"),
+		field.String("stage"),
 	}
 }
 

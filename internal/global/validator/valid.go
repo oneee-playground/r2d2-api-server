@@ -9,3 +9,11 @@ func TaskStageValid(s domain.TaskStage) bool {
 	}
 	return false
 }
+
+func SubmissionAcitonValid(a domain.SubmissionAction) bool {
+	switch a {
+	case domain.ActionApprove, domain.ActionReject:
+		return true
+	}
+	return false
+}
