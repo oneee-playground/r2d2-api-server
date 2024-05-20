@@ -20,5 +20,12 @@ func RegisterTaskStage(v *validator.Validate) error {
 		return err
 	}
 
+	err = v.RegisterValidation("section_type", func(fl validator.FieldLevel) bool {
+		return SectionTypeValid(domain.SectionType(fl.Field().String()))
+	})
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

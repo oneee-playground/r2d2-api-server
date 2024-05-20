@@ -4,15 +4,10 @@ coverage:
       default:
         enabled: yes
         target: 50
-        threshold: "100%"
+        threshold: 50%
         informational: true
         if_ci_failed: success
-    patch:
-      enabled: yes
-      target: 50
-      threshold: "100%"
-      informational: true
-      if_ci_failed: success
+    patch: false
 
 comment:
   require_changes: true

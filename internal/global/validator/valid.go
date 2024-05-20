@@ -17,3 +17,11 @@ func SubmissionAcitonValid(a domain.SubmissionAction) bool {
 	}
 	return false
 }
+
+func SectionTypeValid(t domain.SectionType) bool {
+	switch t {
+	case domain.TypeScenario, domain.TypeLoad:
+		return true
+	}
+	return false
+}
