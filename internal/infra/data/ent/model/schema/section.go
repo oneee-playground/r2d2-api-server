@@ -19,7 +19,7 @@ func (Section) Fields() []ent.Field {
 		field.String("title"),
 		field.String("description"),
 		field.Uint8("index"),
-		field.Uint8("type"),
+		field.String("type"),
 		field.UUID("taskID", uuid.New()),
 	}
 }

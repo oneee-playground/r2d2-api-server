@@ -1,12 +1,16 @@
 package domain
 
-import "github.com/google/uuid"
+import (
+	"github.com/google/uuid"
+)
 
-type SectionType uint8
+//go:generate mockgen -source=section.go -destination=../../test/mocks/section.go -package=mocks
+
+type SectionType string
 
 const (
-	TypeScenario SectionType = iota
-	TypeLoad
+	TypeScenario SectionType = "SCENARIO"
+	TypeLoad     SectionType = "LOAD"
 )
 
 type Section struct {
