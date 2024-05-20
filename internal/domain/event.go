@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/oneee-playground/r2d2-api-server/internal/domain/dto"
 )
 
 //go:generate mockgen -source=event.go -destination=../../test/mocks/event.go -package=mocks
@@ -36,6 +37,11 @@ type Event struct {
 	Submission   *Submission
 }
 
+type EventUsecase interface {
+	GetAllFromSubmission(ctx context.Context, in dto.SubmissionIDInput) (out *dto.EventListOutput, err error)
+}
+
 type EventRepository interface {
+	FetchAllBySubmissionID(ctx context.Context, id uuid.UUID) ([]Event, error)
 	Create(ctx context.Context, event Event) error
 }
