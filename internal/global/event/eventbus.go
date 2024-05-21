@@ -12,12 +12,12 @@ const (
 	TopicSubmission Topic = "submission"
 )
 
-type Handlerfunc func(event any) error
+type Handlerfunc func(ctx context.Context, topic Topic, e any) error
 
 type Publisher interface {
-	Publish(ctx context.Context, topic Topic, event any) error
+	Publish(ctx context.Context, topic Topic, e any) error
 }
 
 type Subscriber interface {
-	Subscribe(ctx context.Context, topic Topic, f Handlerfunc) error
+	Subscribe(ctx context.Context, topic Topic, handlers ...Handlerfunc) error
 }
