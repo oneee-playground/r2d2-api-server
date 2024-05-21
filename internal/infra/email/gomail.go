@@ -40,7 +40,7 @@ func (s *GomailSender) Send(ctx context.Context, address string, subject string,
 	msg.SetHeader("From", s.fromAddr)
 	msg.SetHeader("To", address)
 	msg.SetHeader("Subject", subject)
-	msg.AddAlternativeWriter("test/plain", func(w io.Writer) error {
+	msg.AddAlternativeWriter("text/plain", func(w io.Writer) error {
 		_, err := content.WriteTo(w)
 		return err
 	})
