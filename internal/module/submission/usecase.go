@@ -53,8 +53,17 @@ func (u *submissionUsecase) Submit(ctx context.Context, in dto.SubmissionInput) 
 
 	taskID := in.ID
 
-	if err := u.assureTaskExists(ctx, taskID); err != nil {
+	task, err := u.taskRepository.FetchByID(ctx, taskID)
+	if err != nil {
+		if errors.Is(err, domain.ErrTaskNotFound) {
+			return nil, status.NewErr(http.StatusNotFound, err.Error())
+		}
+
 		return nil, err
+	}
+
+	if task.Stage != domain.StageAvailable {
+		return nil, status.NewErr(http.StatusForbidden, "cannot submit to non-avaiable task")
 	}
 
 	exists, err := u.submissionRepository.UndoneExists(ctx, taskID, info.UserID)
