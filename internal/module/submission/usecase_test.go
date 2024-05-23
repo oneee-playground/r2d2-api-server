@@ -48,6 +48,9 @@ func (s *SubmissionUsecaseSuite) SetupTest() {
 }
 
 func (s *SubmissionUsecaseSuite) TestSubmit() {
+	availableTask := domain.Task{Stage: domain.StageAvailable}
+	draftTask := domain.Task{Stage: domain.StageDraft}
+
 	testcases := []struct {
 		desc     string
 		setup    func()
@@ -57,7 +60,7 @@ func (s *SubmissionUsecaseSuite) TestSubmit() {
 			desc: "success",
 			setup: func() {
 				s.mock.taskRepository.EXPECT().
-					ExistsByID(gomock.Any(), gomock.Any()).Return(true, nil)
+					FetchByID(gomock.Any(), gomock.Any()).Return(availableTask, nil)
 				s.mock.submissionRepository.EXPECT().
 					UndoneExists(gomock.Any(), gomock.Any(), gomock.Any()).Return(false, nil)
 				s.mock.submissionRepository.EXPECT().
@@ -68,10 +71,21 @@ func (s *SubmissionUsecaseSuite) TestSubmit() {
 			checkErr: func(err error) bool { return err == nil },
 		},
 		{
+			desc: "task is not available",
+			setup: func() {
+				s.mock.taskRepository.EXPECT().
+					FetchByID(gomock.Any(), gomock.Any()).Return(draftTask, nil)
+			},
+			checkErr: func(err error) bool {
+				sErr, ok := err.(status.Error)
+				return ok && sErr.StatusCode == http.StatusForbidden
+			},
+		},
+		{
 			desc: "task does not exist",
 			setup: func() {
 				s.mock.taskRepository.EXPECT().
-					ExistsByID(gomock.Any(), gomock.Any()).Return(false, nil)
+					FetchByID(gomock.Any(), gomock.Any()).Return(availableTask, domain.ErrTaskNotFound)
 			},
 			checkErr: func(err error) bool {
 				sErr, ok := err.(status.Error)
@@ -82,7 +96,7 @@ func (s *SubmissionUsecaseSuite) TestSubmit() {
 			desc: "duplicate submission",
 			setup: func() {
 				s.mock.taskRepository.EXPECT().
-					ExistsByID(gomock.Any(), gomock.Any()).Return(true, nil)
+					FetchByID(gomock.Any(), gomock.Any()).Return(availableTask, nil)
 				s.mock.submissionRepository.EXPECT().
 					UndoneExists(gomock.Any(), gomock.Any(), gomock.Any()).Return(true, nil)
 			},
