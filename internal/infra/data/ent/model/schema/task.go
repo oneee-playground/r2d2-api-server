@@ -27,5 +27,6 @@ func (Task) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("submissions", Submission.Type),
 		edge.To("sections", Section.Type),
+		edge.To("resources", Resource.Type),
 	}
 }
