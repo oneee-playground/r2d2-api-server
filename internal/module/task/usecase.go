@@ -97,6 +97,8 @@ func (u *taskUsecase) ChangeStage(ctx context.Context, in dto.TaskStageInput) (e
 		return status.NewErr(http.StatusForbidden, "redundant change")
 	case domain.StageDraft:
 		return status.NewErr(http.StatusForbidden, "cannot go back to draft")
+	case domain.StageAvailable:
+		// TODO: need to validate that task has at least and at most one primary resource.
 	case domain.StageFixing:
 		// TODO: Publish a event to cancel all running or queued submissions.
 		_ = 1 + 1
