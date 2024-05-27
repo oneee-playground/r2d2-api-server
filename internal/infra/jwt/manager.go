@@ -22,7 +22,8 @@ type Manager struct {
 	parser *jwt.Parser
 }
 
-var _ auth_module.TokenManager = (*Manager)(nil)
+var _ auth_module.TokenIssuer = (*Manager)(nil)
+var _ auth_module.TokenDecoder = (*Manager)(nil)
 
 func NewManager(method jwt.SigningMethod, secret any) *Manager {
 	return &Manager{

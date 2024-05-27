@@ -26,7 +26,8 @@ type AuthUsecaseSuite struct {
 	ctl  *gomock.Controller
 	mock struct {
 		oauth          *mocks.MockOAuthClient
-		tokenManager   *mocks.MockTokenManager
+		tokenIssuer    *mocks.MockTokenIssuer
+		tokenDecoder   *mocks.MockTokenDecoder
 		userRepository *mocks.MockUserRepository
 	}
 }
@@ -34,10 +35,11 @@ type AuthUsecaseSuite struct {
 func (s *AuthUsecaseSuite) SetupTest() {
 	s.ctl = gomock.NewController(s.T())
 	s.mock.oauth = mocks.NewMockOAuthClient(s.ctl)
-	s.mock.tokenManager = mocks.NewMockTokenManager(s.ctl)
+	s.mock.tokenIssuer = mocks.NewMockTokenIssuer(s.ctl)
+	s.mock.tokenDecoder = mocks.NewMockTokenDecoder(s.ctl)
 	s.mock.userRepository = mocks.NewMockUserRepository(s.ctl)
 
-	s.usecase = auth_module.NewAuthUsecase(s.mock.oauth, s.mock.tokenManager, s.mock.userRepository)
+	s.usecase = auth_module.NewAuthUsecase(s.mock.oauth, s.mock.tokenIssuer, s.mock.tokenDecoder, s.mock.userRepository)
 }
 
 func (s *AuthUsecaseSuite) TestSignIn() {
@@ -57,7 +59,7 @@ func (s *AuthUsecaseSuite) TestSignIn() {
 					UsernameExists(gomock.Any(), gomock.Any()).Return(true, nil)
 				s.mock.userRepository.EXPECT().
 					FetchByUsername(gomock.Any(), gomock.Any()).Return(domain.User{}, nil)
-				s.mock.tokenManager.EXPECT().
+				s.mock.tokenIssuer.EXPECT().
 					Issue(gomock.Any(), gomock.Any(), gomock.Any()).Return(auth_module.Token{}, nil)
 			},
 			checkerr: func(err error) bool { return err == nil },
@@ -73,7 +75,7 @@ func (s *AuthUsecaseSuite) TestSignIn() {
 					UsernameExists(gomock.Any(), gomock.Any()).Return(false, nil)
 				s.mock.userRepository.EXPECT().
 					Create(gomock.Any(), gomock.Any()).Return(nil)
-				s.mock.tokenManager.EXPECT().
+				s.mock.tokenIssuer.EXPECT().
 					Issue(gomock.Any(), gomock.Any(), gomock.Any()).Return(auth_module.Token{}, nil)
 			},
 			checkerr: func(err error) bool { return err == nil },
