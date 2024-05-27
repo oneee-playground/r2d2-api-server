@@ -15,17 +15,18 @@ import (
 
 type authUsecase struct {
 	oauth        OAuthClient
-	tokenManager TokenManager
+	tokenIssuer  TokenIssuer
+	tokenDecoder TokenDecoder
 
 	userRepository domain.UserRepository
 }
 
 var _ domain.AuthUsecase = (*authUsecase)(nil)
 
-func NewAuthUsecase(oa OAuthClient, tm TokenManager, ur domain.UserRepository) *authUsecase {
+func NewAuthUsecase(oa OAuthClient, ti TokenIssuer, ur domain.UserRepository) *authUsecase {
 	return &authUsecase{
 		oauth:          oa,
-		tokenManager:   tm,
+		tokenIssuer:    ti,
 		userRepository: ur,
 	}
 }
@@ -72,7 +73,7 @@ func (uc *authUsecase) SignIn(ctx context.Context, in *dto.SignInInput) (out *dt
 	}
 
 	// TODO: change this exp into constant one
-	accessToken, err := uc.tokenManager.Issue(ctx, payload, time.Now().Add(7*time.Hour))
+	accessToken, err := uc.tokenIssuer.Issue(ctx, payload, time.Now().Add(7*time.Hour))
 	if err != nil {
 		return nil, errors.Wrap(err, "issuing token")
 	}

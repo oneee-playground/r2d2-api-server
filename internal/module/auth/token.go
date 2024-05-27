@@ -22,7 +22,10 @@ type Token struct {
 	Raw string
 }
 
-type TokenManager interface {
+type TokenIssuer interface {
 	Issue(ctx context.Context, payload auth.Payload, exp time.Time) (Token, error)
+}
+
+type TokenDecoder interface {
 	Decode(ctx context.Context, raw string) (Token, error)
 }
