@@ -6,12 +6,6 @@ import (
 
 //go:generate mockgen -source=eventbus.go -destination=../../../test/mocks/eventbus.go -package=mocks
 
-type Topic string
-
-const (
-	TopicSubmission Topic = "submission"
-)
-
 type Handlerfunc func(ctx context.Context, topic Topic, e any) error
 
 type Publisher interface {
