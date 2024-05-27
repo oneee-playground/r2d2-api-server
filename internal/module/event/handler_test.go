@@ -44,10 +44,9 @@ func (s *EventHandlerSuite) SetupTest() {
 }
 
 func (s *EventHandlerSuite) TestSendNotificationEmail() {
-	testEvent := domain.Event{
-		ID:         uuid.New(),
-		Kind:       domain.KindApprove,
-		Submission: &domain.Submission{},
+	testEvent := event.SubmissionEvent{
+		ID:   uuid.New(),
+		Kind: domain.KindApprove,
 	}
 
 	testUser := domain.User{
