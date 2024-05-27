@@ -203,12 +203,13 @@ func (u *submissionUsecase) assureTaskExists(ctx context.Context, taskID uuid.UU
 func (u *submissionUsecase) publishSubmissionEvent(
 	ctx context.Context, kind domain.EventKind, extra string, submission domain.Submission,
 ) error {
-	e := domain.Event{
-		ID:         uuid.New(),
-		Timestamp:  time.Now(),
-		Kind:       kind,
-		Extra:      extra,
-		Submission: &submission,
+	e := event.SubmissionEvent{
+		ID:           uuid.New(),
+		Timestamp:    time.Now(),
+		Kind:         kind,
+		Extra:        extra,
+		SubmissionID: submission.ID,
+		UserID:       submission.UserID,
 	}
 
 	if err := u.eventPublisher.Publish(ctx, event.TopicSubmission, e); err != nil {

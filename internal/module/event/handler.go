@@ -28,12 +28,20 @@ func NewEventHandler(
 }
 
 func (h *EventHandler) StoreEvent(ctx context.Context, topic event.Topic, e any) error {
-	event, ok := e.(domain.Event)
+	event, ok := e.(event.SubmissionEvent)
 	if !ok {
 		return errors.New("event is not domain event")
 	}
 
-	if err := h.eventRepository.Create(ctx, event); err != nil {
+	domainEvent := domain.Event{
+		ID:           event.ID,
+		Kind:         event.Kind,
+		Extra:        event.Extra,
+		Timestamp:    event.Timestamp,
+		SubmissionID: event.SubmissionID,
+	}
+
+	if err := h.eventRepository.Create(ctx, domainEvent); err != nil {
 		return errors.Wrap(err, "creating event")
 	}
 
@@ -52,12 +60,12 @@ type _emailData struct {
 }
 
 func (h *EventHandler) SendNotificationEmail(ctx context.Context, topic event.Topic, e any) error {
-	event, ok := e.(domain.Event)
+	event, ok := e.(event.SubmissionEvent)
 	if !ok {
 		return errors.New("event is not domain event")
 	}
 
-	user, err := h.userRepository.FetchByID(ctx, event.Submission.UserID)
+	user, err := h.userRepository.FetchByID(ctx, event.UserID)
 	if err != nil {
 		return errors.Wrap(err, "fetching user")
 	}
