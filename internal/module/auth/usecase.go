@@ -23,11 +23,10 @@ type authUsecase struct {
 
 var _ domain.AuthUsecase = (*authUsecase)(nil)
 
-func NewAuthUsecase(oa OAuthClient, tI TokenIssuer, tD TokenDecoder, ur domain.UserRepository) *authUsecase {
+func NewAuthUsecase(oa OAuthClient, ti TokenIssuer, ur domain.UserRepository) *authUsecase {
 	return &authUsecase{
 		oauth:          oa,
-		tokenIssuer:    tI,
-		tokenDecoder:   tD,
+		tokenIssuer:    ti,
 		userRepository: ur,
 	}
 }

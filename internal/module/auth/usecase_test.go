@@ -27,7 +27,6 @@ type AuthUsecaseSuite struct {
 	mock struct {
 		oauth          *mocks.MockOAuthClient
 		tokenIssuer    *mocks.MockTokenIssuer
-		tokenDecoder   *mocks.MockTokenDecoder
 		userRepository *mocks.MockUserRepository
 	}
 }
@@ -36,10 +35,9 @@ func (s *AuthUsecaseSuite) SetupTest() {
 	s.ctl = gomock.NewController(s.T())
 	s.mock.oauth = mocks.NewMockOAuthClient(s.ctl)
 	s.mock.tokenIssuer = mocks.NewMockTokenIssuer(s.ctl)
-	s.mock.tokenDecoder = mocks.NewMockTokenDecoder(s.ctl)
 	s.mock.userRepository = mocks.NewMockUserRepository(s.ctl)
 
-	s.usecase = auth_module.NewAuthUsecase(s.mock.oauth, s.mock.tokenIssuer, s.mock.tokenDecoder, s.mock.userRepository)
+	s.usecase = auth_module.NewAuthUsecase(s.mock.oauth, s.mock.tokenIssuer, s.mock.userRepository)
 }
 
 func (s *AuthUsecaseSuite) TestSignIn() {
