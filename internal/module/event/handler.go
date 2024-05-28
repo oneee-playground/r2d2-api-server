@@ -27,6 +27,16 @@ func NewEventHandler(
 	}
 }
 
+func (h *EventHandler) Register(ctx context.Context, subscriber event.Subscriber) error {
+	if err := subscriber.Subscribe(ctx, event.TopicSubmission,
+		h.SendNotificationEmail, h.StoreEvent,
+	); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (h *EventHandler) StoreEvent(ctx context.Context, topic event.Topic, e any) error {
 	event, ok := e.(event.SubmissionEvent)
 	if !ok {
