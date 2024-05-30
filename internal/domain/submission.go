@@ -48,6 +48,7 @@ var (
 
 type SubmissionRepository interface {
 	// FetchPaginated returns list of submissions with given offset and limit.
+	// It is ordered by timestamp desc.
 	// Submissions will include User field.
 	FetchPaginated(ctx context.Context, taskID uuid.UUID, offset, limit int) ([]Submission, error)
 	Create(ctx context.Context, submission Submission) error
