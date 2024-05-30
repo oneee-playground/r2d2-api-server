@@ -12,6 +12,7 @@ type BuildOpts struct {
 	ID         uuid.UUID `json:"id"`
 	Repository string    `json:"repositoy"`
 	CommitHash string    `json:"commitHash"`
+	Platform   string    `json:"platform"`
 }
 
 type ImageBuilder interface {

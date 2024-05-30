@@ -3,6 +3,7 @@ package event
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -49,6 +50,8 @@ func (s *EventHandlerSuite) TestSendNotificationEmail() {
 		Kind: domain.KindApprove,
 	}
 
+	testPayload, _ := json.Marshal(testEvent)
+
 	testUser := domain.User{
 		Username: "test",
 		Email:    "test@example.com",
@@ -90,7 +93,7 @@ func (s *EventHandlerSuite) TestSendNotificationEmail() {
 
 			tc.setup()
 
-			err := s.handler.SendNotificationEmail(ctx, event.TopicSubmission, testEvent)
+			err := s.handler.SendNotificationEmail(ctx, event.TopicSubmission, testPayload)
 			if tc.wantErr {
 				s.Error(err)
 			} else {
