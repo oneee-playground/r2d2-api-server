@@ -2,6 +2,8 @@ package exec_module
 
 import (
 	"context"
+	"encoding/json"
+	"runtime"
 	"time"
 
 	"github.com/google/uuid"
@@ -58,9 +60,13 @@ func (h *EventHandler) Register(ctx context.Context, subscriber event.Subscriber
 	return nil
 }
 
-func (h *EventHandler) StartBuild(ctx context.Context, topic event.Topic, e any) error {
-	ev, ok := e.(event.SubmissionEvent)
-	if !ok || ev.Kind != domain.KindApprove {
+func (h *EventHandler) StartBuild(ctx context.Context, topic event.Topic, payload []byte) error {
+	var ev event.SubmissionEvent
+	if err := json.Unmarshal(payload, &ev); err != nil {
+		return errors.Wrap(err, "unmarshalling payload")
+	}
+
+	if ev.Kind != domain.KindApprove {
 		return event.NoErrSkipHandler
 	}
 
@@ -78,6 +84,7 @@ func (h *EventHandler) StartBuild(ctx context.Context, topic event.Topic, e any)
 		ID:         submission.ID,
 		Repository: submission.Repository,
 		CommitHash: submission.CommitHash,
+		Platform:   runtime.GOOS + "/" + runtime.GOARCH,
 	}
 
 	if err := h.imageBuilder.RequestBuild(ctx, buildOpts); err != nil {
@@ -98,9 +105,13 @@ func (h *EventHandler) StartBuild(ctx context.Context, topic event.Topic, e any)
 	return nil
 }
 
-func (h *EventHandler) EnqueueJob(ctx context.Context, topic event.Topic, e any) error {
-	ev, ok := e.(event.ExecEvent)
-	if !ok || !ev.Success {
+func (h *EventHandler) EnqueueJob(ctx context.Context, topic event.Topic, payload []byte) error {
+	var ev event.ExecEvent
+	if err := json.Unmarshal(payload, &ev); err != nil {
+		return errors.Wrap(err, "unmarshalling payload")
+	}
+
+	if !ev.Success {
 		return event.NoErrSkipHandler
 	}
 
@@ -164,9 +175,13 @@ func (h *EventHandler) EnqueueJob(ctx context.Context, topic event.Topic, e any)
 	return h.publishSubmissionEvent(ctx, domain.KindTestStart, "", submissionID, execCtx.UserID)
 }
 
-func (h *EventHandler) NotifyBuildFailure(ctx context.Context, topic event.Topic, e any) error {
-	ev, ok := e.(event.ExecEvent)
-	if !ok || ev.Success {
+func (h *EventHandler) NotifyBuildFailure(ctx context.Context, topic event.Topic, payload []byte) error {
+	var ev event.ExecEvent
+	if err := json.Unmarshal(payload, &ev); err != nil {
+		return errors.Wrap(err, "unmarshalling payload")
+	}
+
+	if ev.Success {
 		return event.NoErrSkipHandler
 	}
 
@@ -183,10 +198,10 @@ func (h *EventHandler) NotifyBuildFailure(ctx context.Context, topic event.Topic
 	return h.deleteExecContext(ctx, ev.ID)
 }
 
-func (h *EventHandler) NotifyTestResult(ctx context.Context, topic event.Topic, e any) error {
-	ev, ok := e.(event.ExecEvent)
-	if !ok {
-		return errors.New("event is not exec event")
+func (h *EventHandler) NotifyTestResult(ctx context.Context, topic event.Topic, payload []byte) error {
+	var ev event.ExecEvent
+	if err := json.Unmarshal(payload, &ev); err != nil {
+		return errors.Wrap(err, "unmarshalling payload")
 	}
 
 	execCtx, err := h.contextStorage.Get(ctx, ev.ID)

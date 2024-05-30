@@ -8,7 +8,7 @@ import (
 
 //go:generate mockgen -source=eventbus.go -destination=../../../test/mocks/eventbus.go -package=mocks
 
-type HandlerFunc func(ctx context.Context, topic Topic, e any) error
+type HandlerFunc func(ctx context.Context, topic Topic, payload []byte) error
 
 type Publisher interface {
 	Publish(ctx context.Context, topic Topic, e any) error

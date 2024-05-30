@@ -3,6 +3,7 @@ package event
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"text/template"
 
 	"github.com/oneee-playground/r2d2-api-server/internal/domain"
@@ -37,10 +38,10 @@ func (h *EventHandler) Register(ctx context.Context, subscriber event.Subscriber
 	return nil
 }
 
-func (h *EventHandler) StoreEvent(ctx context.Context, topic event.Topic, e any) error {
-	event, ok := e.(event.SubmissionEvent)
-	if !ok {
-		return errors.New("event is not domain event")
+func (h *EventHandler) StoreEvent(ctx context.Context, topic event.Topic, payload []byte) error {
+	var event event.SubmissionEvent
+	if err := json.Unmarshal(payload, &event); err != nil {
+		return errors.Wrap(err, "unmarshalling payload")
 	}
 
 	domainEvent := domain.Event{
@@ -69,10 +70,10 @@ type _emailData struct {
 	EventKind string
 }
 
-func (h *EventHandler) SendNotificationEmail(ctx context.Context, topic event.Topic, e any) error {
-	event, ok := e.(event.SubmissionEvent)
-	if !ok {
-		return errors.New("event is not domain event")
+func (h *EventHandler) SendNotificationEmail(ctx context.Context, topic event.Topic, payload []byte) error {
+	var event event.SubmissionEvent
+	if err := json.Unmarshal(payload, &event); err != nil {
+		return errors.Wrap(err, "unmarshalling payload")
 	}
 
 	user, err := h.userRepository.FetchByID(ctx, event.UserID)
