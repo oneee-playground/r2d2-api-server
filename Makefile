@@ -17,6 +17,7 @@ unit-test-cov:
 .PHONY: gen-models
 gen-models:
 	@go generate ./internal/infra/data/ent/model/...
+	@go mod tidy
 
 MOCK_PKG = $(shell go list ./... | grep -v /internal/infra/data/ent/model)
 
