@@ -11,6 +11,7 @@ import (
 	"github.com/oneee-playground/r2d2-api-server/internal/domain"
 	auth_module "github.com/oneee-playground/r2d2-api-server/internal/module/auth"
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
 )
 
 var requiredScopes = []string{"read:user", "user:email"}
@@ -18,15 +19,17 @@ var requiredScopes = []string{"read:user", "user:email"}
 // Client is github-specific oauth client.
 type Client struct {
 	httpClient *http.Client
+	logger     *zap.Logger
 
 	clientID, clientSecret string
 }
 
 var _ auth_module.OAuthClient = (*Client)(nil)
 
-func NewClient(client *http.Client, clientID, clientSecret string) *Client {
+func NewClient(client *http.Client, logger *zap.Logger, clientID, clientSecret string) *Client {
 	return &Client{
 		httpClient:   client,
+		logger:       logger,
 		clientID:     clientID,
 		clientSecret: clientSecret,
 	}

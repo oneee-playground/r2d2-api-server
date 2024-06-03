@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/oneee-playground/r2d2-api-server/internal/global/event"
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
 )
 
 type QueueConfig struct {
@@ -19,6 +20,7 @@ type QueueConfig struct {
 
 type SQSEventBus struct {
 	client *sqs.Client
+	logger *zap.Logger
 
 	// topicMapping maps topic into queue.
 	topicMapping map[event.Topic]QueueConfig
@@ -31,9 +33,10 @@ var (
 )
 
 // topicMapping should not be nil.
-func NewSQSEventBus(client *sqs.Client, topicMapping map[event.Topic]QueueConfig) *SQSEventBus {
+func NewSQSEventBus(client *sqs.Client, logger *zap.Logger, topicMapping map[event.Topic]QueueConfig) *SQSEventBus {
 	return &SQSEventBus{
 		client:       client,
+		logger:       logger,
 		topicMapping: topicMapping,
 		handlers:     make(map[event.Topic][]event.HandlerFunc),
 	}
@@ -67,6 +70,8 @@ func (b *SQSEventBus) Subscribe(ctx context.Context, topic event.Topic, handlers
 // Listen subscribes all topics and periodically polls messages.
 // It is required to call it within seperate goroutine since it blocks the flow.
 func (b *SQSEventBus) Listen(ctx context.Context) {
+	b.logger.Info("started listening topics")
+
 	var wg sync.WaitGroup
 
 	for topic, queue := range b.topicMapping {
@@ -91,12 +96,15 @@ func (b *SQSEventBus) listenTopic(ctx context.Context, wg *sync.WaitGroup, topic
 	for {
 		select {
 		case <-ctx.Done():
-			// TODO: Maybe log the behavior.
+			b.logger.Error("context done", zap.Error(ctx.Err()))
 			return
 		case <-ticker.C:
 			output, err := b.client.ReceiveMessage(ctx, input)
 			if err != nil {
-				// TODO: log the error.
+				b.logger.Error("failed to receive message",
+					zap.String("topic", string(topic)),
+					zap.Error(err),
+				)
 				continue
 			}
 
@@ -110,7 +118,10 @@ func (b *SQSEventBus) listenTopic(ctx context.Context, wg *sync.WaitGroup, topic
 					}
 
 					if err != nil {
-						// TODO: log the error.
+						b.logger.Error("failed to handle message",
+							zap.String("topic", string(topic)),
+							zap.Error(err),
+						)
 					}
 				}
 			}

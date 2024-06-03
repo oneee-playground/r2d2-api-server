@@ -10,6 +10,7 @@ import (
 	auth_module "github.com/oneee-playground/r2d2-api-server/internal/module/auth"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+	"go.uber.org/zap"
 )
 
 func TestGitHubClientSuote(t *testing.T) {
@@ -29,7 +30,7 @@ func (s *GitHubClientSuote) SetupTest() {
 
 	httpClient := &http.Client{Transport: s.mockTransport}
 
-	s.client = NewClient(httpClient, "", "")
+	s.client = NewClient(httpClient, zap.NewNop(), "", "")
 }
 
 func (s *GitHubClientSuote) TestIssueAccessToken() {

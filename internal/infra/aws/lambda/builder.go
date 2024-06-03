@@ -10,19 +10,22 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/lambda/types"
 	exec_module "github.com/oneee-playground/r2d2-api-server/internal/module/exec"
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
 )
 
 const builderFuncName = "r2d2-image-builder"
 
 type LambdaImageBuilder struct {
 	client *lambda.Client
+	logger *zap.Logger
 }
 
 var _ exec_module.ImageBuilder = (*LambdaImageBuilder)(nil)
 
-func NewLambdaImageBuilder(client *lambda.Client) *LambdaImageBuilder {
+func NewLambdaImageBuilder(client *lambda.Client, logger *zap.Logger) *LambdaImageBuilder {
 	return &LambdaImageBuilder{
 		client: client,
+		logger: logger,
 	}
 }
 
@@ -44,8 +47,13 @@ func (b *LambdaImageBuilder) RequestBuild(ctx context.Context, opts exec_module.
 	}
 
 	if output.StatusCode != http.StatusAccepted {
-		return errors.New("invocation is not accepted")
+		err := errors.New("invocation is not accepted")
+		b.logger.Error(err.Error(), zap.Any("output", output))
+
+		return err
 	}
+
+	b.logger.Info("requested image build", zap.String("id", opts.ID.String()))
 
 	return nil
 }
