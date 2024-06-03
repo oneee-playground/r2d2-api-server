@@ -82,6 +82,7 @@ func (h *EventHandler) StartBuild(ctx context.Context, topic event.Topic, payloa
 
 	buildOpts := BuildOpts{
 		ID:         submission.ID,
+		TaskID:     submission.TaskID,
 		Repository: submission.Repository,
 		CommitHash: submission.CommitHash,
 		Platform:   runtime.GOOS + "/" + runtime.GOARCH,
