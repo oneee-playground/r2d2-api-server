@@ -12,9 +12,9 @@ type SectionListElem struct {
 type SectionListOutput []SectionListElem
 
 type SectionInput struct {
-	Type        string `json:"type" validate:"section_type"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
+	Type        string `json:"type" binding:"required" validate:"section_type"`
+	Title       string `json:"title" binding:"required"`
+	Description string `json:"description" binding:"required"`
 }
 
 type CreateSectionInput struct {
@@ -23,8 +23,8 @@ type CreateSectionInput struct {
 }
 
 type SectionIDInput struct {
-	TaskID    uuid.UUID
-	SectionID uuid.UUID
+	TaskID    uuid.UUID `uri:"taskID" binding:"required"`
+	SectionID uuid.UUID `uri:"sectionID" binding:"required"`
 }
 
 type UpdateSectionInput struct {
@@ -34,5 +34,5 @@ type UpdateSectionInput struct {
 
 type SectionIndexInput struct {
 	SectionIDInput
-	Index int `json:"index"`
+	Index int `json:"index" binding:"required"`
 }
