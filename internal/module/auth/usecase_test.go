@@ -108,7 +108,7 @@ func (s *AuthUsecaseSuite) TestSignIn() {
 
 			ctx := context.Background()
 
-			_, err := s.usecase.SignIn(ctx, &dto.SignInInput{})
+			_, err := s.usecase.SignIn(ctx, dto.SignInInput{})
 			s.True(tc.checkerr(err), err)
 		})
 	}
