@@ -10,7 +10,7 @@ type UserInfo struct {
 }
 
 type IDInput struct {
-	ID uuid.UUID
+	ID uuid.UUID `uri:"id" binding:"required"`
 }
 
 type IDOutput struct {

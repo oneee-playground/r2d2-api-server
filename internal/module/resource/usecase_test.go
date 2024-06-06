@@ -100,7 +100,9 @@ func (s *ResourceUsecaseSuite) TestCreateResource() {
 
 			tc.setup()
 
-			err := s.usecase.CreateResource(ctx, dto.CreateResourceInput{})
+			err := s.usecase.CreateResource(ctx, dto.CreateResourceInput{
+				ResourceInput: dto.ResourceInput{IsPrimary: new(bool)},
+			})
 			s.True(tc.checkErr(err), err)
 		})
 	}

@@ -63,7 +63,7 @@ func (u *resourceUsecase) CreateResource(ctx context.Context, in dto.CreateResou
 		Port:      in.Port,
 		CPU:       in.CPU,
 		Memory:    in.Memory,
-		IsPrimary: in.IsPrimary,
+		IsPrimary: *in.IsPrimary,
 		TaskID:    task.ID,
 	}
 

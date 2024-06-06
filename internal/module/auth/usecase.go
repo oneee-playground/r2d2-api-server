@@ -31,7 +31,7 @@ func NewAuthUsecase(oa OAuthClient, ti TokenIssuer, ur domain.UserRepository) *a
 	}
 }
 
-func (uc *authUsecase) SignIn(ctx context.Context, in *dto.SignInInput) (out *dto.AccessTokenOutput, err error) {
+func (uc *authUsecase) SignIn(ctx context.Context, in dto.SignInInput) (out *dto.AccessTokenOutput, err error) {
 	token, err := uc.oauth.IssueAccessToken(ctx, in.Code)
 	if err != nil {
 		if errors.Is(err, ErrInvalidCode) || errors.Is(err, ErrNotEnoughScope) {

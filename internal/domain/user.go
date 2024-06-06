@@ -13,7 +13,7 @@ import (
 type UserRole uint8
 
 const (
-	RoleMember UserRole = iota
+	RoleMember UserRole = iota + 1
 	RoleAdmin
 )
 
@@ -41,7 +41,7 @@ func (u User) IsAdmin() bool {
 }
 
 type AuthUsecase interface {
-	SignIn(ctx context.Context, in *dto.SignInInput) (out *dto.AccessTokenOutput, err error)
+	SignIn(ctx context.Context, in dto.SignInInput) (out *dto.AccessTokenOutput, err error)
 }
 
 type UserUsecase interface {
