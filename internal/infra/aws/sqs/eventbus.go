@@ -8,6 +8,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
+	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
 	"github.com/oneee-playground/r2d2-api-server/internal/global/event"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
@@ -86,7 +87,7 @@ func (b *SQSEventBus) listenTopic(ctx context.Context, wg *sync.WaitGroup, topic
 	ticker := time.NewTicker(queue.PollInterval)
 
 	input := &sqs.ReceiveMessageInput{
-		QueueUrl: &queue.URL,
+		QueueUrl: aws.String(queue.URL),
 		// TODO: Are ther any more things to add?
 	}
 
@@ -108,7 +109,13 @@ func (b *SQSEventBus) listenTopic(ctx context.Context, wg *sync.WaitGroup, topic
 				continue
 			}
 
-			for _, message := range output.Messages {
+			if len(output.Messages) == 0 {
+				continue
+			}
+
+			entries := make([]types.DeleteMessageBatchRequestEntry, len(output.Messages))
+
+			for idx, message := range output.Messages {
 				payload := []byte(*message.Body)
 
 				for _, f := range b.handlers[topic] {
@@ -124,6 +131,18 @@ func (b *SQSEventBus) listenTopic(ctx context.Context, wg *sync.WaitGroup, topic
 						)
 					}
 				}
+
+				entries[idx] = types.DeleteMessageBatchRequestEntry{
+					Id: message.MessageId,
+				}
+			}
+
+			_, err = b.client.DeleteMessageBatch(ctx, &sqs.DeleteMessageBatchInput{Entries: entries})
+			if err != nil {
+				b.logger.Error("failed to delete messages",
+					zap.String("topic", string(topic)),
+					zap.Error(err),
+				)
 			}
 		}
 	}
