@@ -13,6 +13,7 @@ import (
 	"github.com/oneee-playground/r2d2-api-server/internal/global/status"
 	submission_module "github.com/oneee-playground/r2d2-api-server/internal/module/submission"
 	"github.com/oneee-playground/r2d2-api-server/test/mocks"
+	"github.com/oneee-playground/r2d2-api-server/test/stubs"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -32,6 +33,9 @@ type SubmissionUsecaseSuite struct {
 		eventRepository      *mocks.MockEventRepository
 		eventPublisher       *mocks.MockPublisher
 	}
+	stub struct {
+		locker *stubs.StubLocker
+	}
 }
 
 func (s *SubmissionUsecaseSuite) SetupTest() {
@@ -40,10 +44,11 @@ func (s *SubmissionUsecaseSuite) SetupTest() {
 	s.mock.submissionRepository = mocks.NewMockSubmissionRepository(s.ctl)
 	s.mock.eventRepository = mocks.NewMockEventRepository(s.ctl)
 	s.mock.eventPublisher = mocks.NewMockPublisher(s.ctl)
+	s.stub.locker = stubs.NewStubLocker()
 
 	s.usecase = submission_module.NewSubmissionUsecase(
 		s.mock.taskRepository, s.mock.submissionRepository,
-		s.mock.eventRepository, s.mock.eventPublisher,
+		s.mock.eventRepository, s.mock.eventPublisher, s.stub.locker,
 	)
 }
 

@@ -12,6 +12,7 @@ import (
 	"github.com/oneee-playground/r2d2-api-server/internal/global/status"
 	section_module "github.com/oneee-playground/r2d2-api-server/internal/module/section"
 	"github.com/oneee-playground/r2d2-api-server/test/mocks"
+	"github.com/oneee-playground/r2d2-api-server/test/stubs"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -29,6 +30,9 @@ type SectionUsecaseSuite struct {
 		taskRepository    *mocks.MockTaskRepository
 		sectionRepository *mocks.MockSectionRepository
 	}
+	stub struct {
+		locker *stubs.StubLocker
+	}
 }
 
 func (s *SectionUsecaseSuite) SetupTest() {
@@ -36,8 +40,9 @@ func (s *SectionUsecaseSuite) SetupTest() {
 
 	s.mock.taskRepository = mocks.NewMockTaskRepository(s.ctl)
 	s.mock.sectionRepository = mocks.NewMockSectionRepository(s.ctl)
+	s.stub.locker = stubs.NewStubLocker()
 
-	s.usecase = section_module.NewSectionUsecase(s.mock.sectionRepository, s.mock.taskRepository)
+	s.usecase = section_module.NewSectionUsecase(s.mock.sectionRepository, s.mock.taskRepository, s.stub.locker)
 }
 
 func (s *SectionUsecaseSuite) TestUpdateSection() {
