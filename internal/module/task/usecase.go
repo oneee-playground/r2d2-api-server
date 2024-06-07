@@ -85,7 +85,13 @@ func (u *taskUsecase) UpdateTask(ctx context.Context, in dto.UpdateTaskInput) (e
 }
 
 func (u *taskUsecase) ChangeStage(ctx context.Context, in dto.TaskStageInput) (err error) {
-	ctx = tx.NewAtomic(ctx)
+	ctx, err = tx.NewAtomic(ctx, tx.AtomicOpts{
+		ReadOnly:    false,
+		DataSources: []any{u.taskRepository},
+	})
+	if err != nil {
+		return errors.Wrap(err, "starting atomic transaction")
+	}
 	defer tx.Evaluate(ctx, &err)
 
 	ctx, release, err := u.lock.Acquire(ctx, "task", in.ID.String())

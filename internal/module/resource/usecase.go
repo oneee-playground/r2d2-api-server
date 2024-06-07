@@ -47,7 +47,16 @@ func (u *resourceUsecase) GetList(ctx context.Context, in dto.IDInput) (out *dto
 }
 
 func (u *resourceUsecase) CreateResource(ctx context.Context, in dto.CreateResourceInput) (err error) {
-	ctx = tx.NewAtomic(ctx)
+	ctx, err = tx.NewAtomic(ctx, tx.AtomicOpts{
+		ReadOnly: false,
+		DataSources: []any{
+			u.taskRepository,
+			u.resourceRepository,
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "starting atomic transaction")
+	}
 	defer tx.Evaluate(ctx, &err)
 
 	ctx, release, err := u.lock.Acquire(ctx, "task", in.ID.String())
@@ -91,7 +100,16 @@ func (u *resourceUsecase) CreateResource(ctx context.Context, in dto.CreateResou
 }
 
 func (u *resourceUsecase) DeleteResource(ctx context.Context, in dto.ResourceIDInput) (err error) {
-	ctx = tx.NewAtomic(ctx)
+	ctx, err = tx.NewAtomic(ctx, tx.AtomicOpts{
+		ReadOnly: false,
+		DataSources: []any{
+			u.taskRepository,
+			u.resourceRepository,
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "starting atomic transaction")
+	}
 	defer tx.Evaluate(ctx, &err)
 
 	ctx, release, err := u.lock.Acquire(ctx, "task", in.ID.String())

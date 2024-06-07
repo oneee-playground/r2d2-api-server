@@ -15,9 +15,33 @@ type _atomicKey struct{}
 
 type Atomic struct{ txs map[any]Tx }
 
-func NewAtomic(ctx context.Context) context.Context {
+type AtomicOpts struct {
+	ReadOnly    bool
+	DataSources []any
+}
+
+func NewAtomic(ctx context.Context, opts AtomicOpts) (context.Context, error) {
 	atomic := &Atomic{txs: make(map[any]Tx)}
-	return context.WithValue(ctx, _atomicKey{}, atomic)
+
+	for _, v := range opts.DataSources {
+		ds, ok := v.(DataSource)
+		if !ok {
+			// Skip in case it doesn't implement atomic operation.
+			continue
+		}
+		if _, ok := atomic.txs[ds.Key()]; ok {
+			continue
+		}
+
+		tx, err := ds.NewTxFunc()(ctx, opts)
+		if err != nil {
+			return nil, errors.Join(err, atomic.rollback(ctx))
+		}
+
+		atomic.txs[ds.Key()] = tx
+	}
+
+	return context.WithValue(ctx, _atomicKey{}, atomic), nil
 }
 
 func AtomicFromContext(ctx context.Context) *Atomic {
@@ -28,23 +52,8 @@ func AtomicFromContext(ctx context.Context) *Atomic {
 	return atomic
 }
 
-func (a *Atomic) Get(key any) (Tx, bool) {
-	tx, ok := a.txs[key]
-	return tx, ok
-}
-
-func (a *Atomic) Set(key any, tx Tx) {
-	a.txs[key] = tx
-}
-
-func (a *Atomic) GetOrNew(key any, newFunc func() Tx) Tx {
-	tx, ok := a.Get(key)
-	if !ok {
-		tx = newFunc()
-		a.Set(key, tx)
-	}
-
-	return tx
+func (a *Atomic) Get(key any) Tx {
+	return a.txs[key]
 }
 
 func (a *Atomic) commit(ctx context.Context) error {

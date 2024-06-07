@@ -48,7 +48,16 @@ func (s *sectionUsecase) GetList(ctx context.Context, in dto.IDInput) (out *dto.
 }
 
 func (s *sectionUsecase) CreateSection(ctx context.Context, in dto.CreateSectionInput) (err error) {
-	ctx = tx.NewAtomic(ctx)
+	ctx, err = tx.NewAtomic(ctx, tx.AtomicOpts{
+		ReadOnly: false,
+		DataSources: []any{
+			s.taskRepository,
+			s.sectionRepository,
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "starting atomic transaction")
+	}
 	defer tx.Evaluate(ctx, &err)
 
 	ctx, release, err := s.lock.Acquire(ctx, "task", in.ID.String())
@@ -85,7 +94,16 @@ func (s *sectionUsecase) CreateSection(ctx context.Context, in dto.CreateSection
 }
 
 func (s *sectionUsecase) UpdateSection(ctx context.Context, in dto.UpdateSectionInput) (err error) {
-	ctx = tx.NewAtomic(ctx)
+	ctx, err = tx.NewAtomic(ctx, tx.AtomicOpts{
+		ReadOnly: false,
+		DataSources: []any{
+			s.taskRepository,
+			s.sectionRepository,
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "starting atomic transaction")
+	}
 	defer tx.Evaluate(ctx, &err)
 
 	if err := s.assureTaskExists(ctx, in.TaskID); err != nil {
@@ -115,7 +133,16 @@ func (s *sectionUsecase) UpdateSection(ctx context.Context, in dto.UpdateSection
 }
 
 func (s *sectionUsecase) ChangeIndex(ctx context.Context, in dto.SectionIndexInput) (err error) {
-	ctx = tx.NewAtomic(ctx)
+	ctx, err = tx.NewAtomic(ctx, tx.AtomicOpts{
+		ReadOnly: false,
+		DataSources: []any{
+			s.taskRepository,
+			s.sectionRepository,
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "starting atomic transaction")
+	}
 	defer tx.Evaluate(ctx, &err)
 
 	ctx, release, err := s.lock.Acquire(ctx, "task", in.TaskID.String())

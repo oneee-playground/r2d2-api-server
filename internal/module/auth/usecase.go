@@ -34,9 +34,6 @@ func NewAuthUsecase(oa OAuthClient, ti TokenIssuer, ur domain.UserRepository, l 
 }
 
 func (uc *authUsecase) SignIn(ctx context.Context, in dto.SignInInput) (out *dto.AccessTokenOutput, err error) {
-	ctx = tx.NewAtomic(ctx)
-	defer tx.Evaluate(ctx, &err)
-
 	token, err := uc.oauth.IssueAccessToken(ctx, in.Code)
 	if err != nil {
 		if errors.Is(err, ErrInvalidCode) || errors.Is(err, ErrNotEnoughScope) {
@@ -50,6 +47,15 @@ func (uc *authUsecase) SignIn(ctx context.Context, in dto.SignInInput) (out *dto
 	if err != nil {
 		return nil, errors.Wrap(err, "getting user info")
 	}
+
+	ctx, err = tx.NewAtomic(ctx, tx.AtomicOpts{
+		ReadOnly:    false,
+		DataSources: []any{uc.userRepository},
+	})
+	if err != nil {
+		return nil, errors.Wrap(err, "starting atomic transaction")
+	}
+	defer tx.Evaluate(ctx, &err)
 
 	ctx, release, err := uc.lock.Acquire(ctx, "username", user.Username)
 	if err != nil {
