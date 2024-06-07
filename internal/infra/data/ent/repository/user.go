@@ -5,22 +5,27 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/oneee-playground/r2d2-api-server/internal/domain"
+	"github.com/oneee-playground/r2d2-api-server/internal/global/tx"
+	"github.com/oneee-playground/r2d2-api-server/internal/infra/data/ent/datasource"
 	"github.com/oneee-playground/r2d2-api-server/internal/infra/data/ent/model"
 	"github.com/oneee-playground/r2d2-api-server/internal/infra/data/ent/model/user"
 )
 
 type UserRepository struct {
-	client *model.UserClient
+	*datasource.DataSource
 }
 
-var _ domain.UserRepository = (*UserRepository)(nil)
+var (
+	_ domain.UserRepository = (*UserRepository)(nil)
+	_ tx.DataSource         = (*UserRepository)(nil)
+)
 
-func NewUserRepository(client *model.UserClient) *UserRepository {
-	return &UserRepository{client: client}
+func NewUserRepository(ds *datasource.DataSource) *UserRepository {
+	return &UserRepository{DataSource: ds}
 }
 
 func (r *UserRepository) Create(ctx context.Context, user domain.User) error {
-	return r.client.Create().
+	return r.DataSource.TxOrPlain(ctx).User.Create().
 		SetID(user.ID).
 		SetUsername(user.Username).
 		SetEmail(user.Email).
@@ -30,7 +35,7 @@ func (r *UserRepository) Create(ctx context.Context, user domain.User) error {
 }
 
 func (r *UserRepository) FetchByID(ctx context.Context, id uuid.UUID) (domain.User, error) {
-	entity, err := r.client.Get(ctx, id)
+	entity, err := r.DataSource.TxOrPlain(ctx).User.Get(ctx, id)
 	if err != nil {
 		if model.IsNotFound(err) {
 			return domain.User{}, domain.ErrUserNotFound
@@ -50,7 +55,8 @@ func (r *UserRepository) FetchByID(ctx context.Context, id uuid.UUID) (domain.Us
 }
 
 func (r *UserRepository) FetchByUsername(ctx context.Context, username string) (domain.User, error) {
-	entity, err := r.client.Query().
+	entity, err := r.DataSource.TxOrPlain(ctx).User.
+		Query().
 		Where(user.Username(username)).
 		Only(ctx)
 	if err != nil {
@@ -72,7 +78,8 @@ func (r *UserRepository) FetchByUsername(ctx context.Context, username string) (
 }
 
 func (r *UserRepository) UsernameExists(ctx context.Context, username string) (bool, error) {
-	return r.client.Query().
+	return r.DataSource.TxOrPlain(ctx).User.
+		Query().
 		Where(user.Username(username)).
 		Exist(ctx)
 }
