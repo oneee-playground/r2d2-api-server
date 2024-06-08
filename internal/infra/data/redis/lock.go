@@ -2,7 +2,6 @@ package redis
 
 import (
 	"context"
-	"strings"
 
 	"github.com/oneee-playground/r2d2-api-server/internal/global/tx"
 	"github.com/pkg/errors"
@@ -26,5 +25,5 @@ func (l *RedisLocker) AcquireKey(ctx context.Context, key string) (context.Conte
 }
 
 func (l *RedisLocker) Acquire(ctx context.Context, toJoin ...string) (context.Context, context.CancelFunc, error) {
-	return l.AcquireKey(ctx, strings.Join(toJoin, ":"))
+	return l.AcquireKey(ctx, buildKey(toJoin...))
 }
