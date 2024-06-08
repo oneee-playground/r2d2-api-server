@@ -7,20 +7,24 @@ import (
 	"github.com/oneee-playground/r2d2-api-server/internal/domain"
 	"github.com/oneee-playground/r2d2-api-server/internal/domain/dto"
 	"github.com/oneee-playground/r2d2-api-server/internal/global/status"
+	"github.com/oneee-playground/r2d2-api-server/internal/global/tx"
 	"github.com/pkg/errors"
 )
 
 type resourceUsecase struct {
+	lock tx.Locker
+
 	taskRepository     domain.TaskRepository
 	resourceRepository domain.ResourceRepository
 }
 
 var _ domain.ResourceUsecase = (*resourceUsecase)(nil)
 
-func NewResourceUsecase(rr domain.ResourceRepository, tr domain.TaskRepository) *resourceUsecase {
+func NewResourceUsecase(rr domain.ResourceRepository, tr domain.TaskRepository, l tx.Locker) *resourceUsecase {
 	return &resourceUsecase{
 		resourceRepository: rr,
 		taskRepository:     tr,
+		lock:               l,
 	}
 }
 
@@ -43,7 +47,24 @@ func (u *resourceUsecase) GetList(ctx context.Context, in dto.IDInput) (out *dto
 }
 
 func (u *resourceUsecase) CreateResource(ctx context.Context, in dto.CreateResourceInput) (err error) {
-	// TODO: transactional
+	ctx, err = tx.NewAtomic(ctx, tx.AtomicOpts{
+		ReadOnly: false,
+		DataSources: []any{
+			u.taskRepository,
+			u.resourceRepository,
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "starting atomic transaction")
+	}
+	defer tx.Evaluate(ctx, &err)
+
+	ctx, release, err := u.lock.Acquire(ctx, "task", in.ID.String())
+	if err != nil {
+		return errors.Wrap(err, "acquiring lock")
+	}
+	defer release()
+
 	task, err := u.taskRepository.FetchByID(ctx, in.ID)
 	if err != nil {
 		if errors.Is(err, domain.ErrTaskNotFound) {
@@ -79,7 +100,24 @@ func (u *resourceUsecase) CreateResource(ctx context.Context, in dto.CreateResou
 }
 
 func (u *resourceUsecase) DeleteResource(ctx context.Context, in dto.ResourceIDInput) (err error) {
-	// TODO: transactional
+	ctx, err = tx.NewAtomic(ctx, tx.AtomicOpts{
+		ReadOnly: false,
+		DataSources: []any{
+			u.taskRepository,
+			u.resourceRepository,
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "starting atomic transaction")
+	}
+	defer tx.Evaluate(ctx, &err)
+
+	ctx, release, err := u.lock.Acquire(ctx, "task", in.ID.String())
+	if err != nil {
+		return errors.Wrap(err, "acquiring lock")
+	}
+	defer release()
+
 	task, err := u.taskRepository.FetchByID(ctx, in.ID)
 	if err != nil {
 		if errors.Is(err, domain.ErrTaskNotFound) {

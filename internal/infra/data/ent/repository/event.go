@@ -5,22 +5,27 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/oneee-playground/r2d2-api-server/internal/domain"
-	"github.com/oneee-playground/r2d2-api-server/internal/infra/data/ent/model"
+	"github.com/oneee-playground/r2d2-api-server/internal/global/tx"
+	"github.com/oneee-playground/r2d2-api-server/internal/infra/data/ent/datasource"
 	"github.com/oneee-playground/r2d2-api-server/internal/infra/data/ent/model/event"
 )
 
 type EventRepository struct {
-	client *model.EventClient
+	*datasource.DataSource
 }
 
-var _ domain.EventRepository = (*EventRepository)(nil)
+var (
+	_ domain.EventRepository = (*EventRepository)(nil)
+	_ tx.DataSource          = (*EventRepository)(nil)
+)
 
-func NewEventRepository(client *model.EventClient) *EventRepository {
-	return &EventRepository{client: client}
+func NewEventRepository(ds *datasource.DataSource) *EventRepository {
+	return &EventRepository{DataSource: ds}
 }
 
 func (r *EventRepository) Create(ctx context.Context, event domain.Event) error {
-	return r.client.Create().
+	return r.DataSource.TxOrPlain(ctx).Event.
+		Create().
 		SetID(event.ID).
 		SetKind(string(event.Kind)).
 		SetSubmissionID(event.SubmissionID).
@@ -30,7 +35,8 @@ func (r *EventRepository) Create(ctx context.Context, event domain.Event) error 
 }
 
 func (r *EventRepository) FetchAllBySubmissionID(ctx context.Context, id uuid.UUID) ([]domain.Event, error) {
-	models, err := r.client.Query().
+	models, err := r.DataSource.TxOrPlain(ctx).Event.
+		Query().
 		Where(event.SubmissionID(id)).
 		All(ctx)
 	if err != nil {

@@ -12,6 +12,7 @@ import (
 	"github.com/oneee-playground/r2d2-api-server/internal/global/status"
 	task_module "github.com/oneee-playground/r2d2-api-server/internal/module/task"
 	"github.com/oneee-playground/r2d2-api-server/test/mocks"
+	"github.com/oneee-playground/r2d2-api-server/test/stubs"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -28,13 +29,17 @@ type TaskUsecaseSuite struct {
 	mock struct {
 		taskRepository *mocks.MockTaskRepository
 	}
+	stub struct {
+		locker *stubs.StubLocker
+	}
 }
 
 func (s *TaskUsecaseSuite) SetupTest() {
 	s.ctl = gomock.NewController(s.T())
 	s.mock.taskRepository = mocks.NewMockTaskRepository(s.ctl)
+	s.stub.locker = stubs.NewStubLocker()
 
-	s.usecase = task_module.NewTaskUsecase(s.mock.taskRepository)
+	s.usecase = task_module.NewTaskUsecase(s.mock.taskRepository, s.stub.locker)
 }
 
 func (s *TaskUsecaseSuite) TestChangeStage() {

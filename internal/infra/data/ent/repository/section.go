@@ -6,24 +6,31 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/oneee-playground/r2d2-api-server/internal/domain"
+	"github.com/oneee-playground/r2d2-api-server/internal/global/tx"
+	"github.com/oneee-playground/r2d2-api-server/internal/infra/data/ent/datasource"
 	"github.com/oneee-playground/r2d2-api-server/internal/infra/data/ent/model"
 	"github.com/oneee-playground/r2d2-api-server/internal/infra/data/ent/model/section"
 )
 
 type SectionRepository struct {
-	client *model.SectionClient
+	*datasource.DataSource
 }
 
-var _ domain.SectionRepository = (*SectionRepository)(nil)
+var (
+	_ domain.SectionRepository = (*SectionRepository)(nil)
+	_ tx.DataSource            = (*SectionRepository)(nil)
+)
 
-func NewSectionRepository(client *model.SectionClient) *SectionRepository {
-	return &SectionRepository{client: client}
+func NewSectionRepository(ds *datasource.DataSource) *SectionRepository {
+	return &SectionRepository{DataSource: ds}
 }
 
 func (r *SectionRepository) CountByTaskID(ctx context.Context, taskID uuid.UUID) (uint8, error) {
-	count, err := r.client.Query().Where(
-		section.TaskID(taskID),
-	).Count(ctx)
+	count, err := r.DataSource.TxOrPlain(ctx).Section.
+		Query().
+		Where(
+			section.TaskID(taskID),
+		).Count(ctx)
 	if err != nil {
 		return 0, err
 	}
@@ -32,7 +39,8 @@ func (r *SectionRepository) CountByTaskID(ctx context.Context, taskID uuid.UUID)
 }
 
 func (r *SectionRepository) Create(ctx context.Context, section domain.Section) error {
-	return r.client.Create().
+	return r.DataSource.TxOrPlain(ctx).Section.
+		Create().
 		SetID(section.ID).
 		SetDescription(section.Description).
 		SetIndex(section.Index).
@@ -43,7 +51,7 @@ func (r *SectionRepository) Create(ctx context.Context, section domain.Section) 
 }
 
 func (r *SectionRepository) FetchByID(ctx context.Context, id uuid.UUID) (domain.Section, error) {
-	entity, err := r.client.Get(ctx, id)
+	entity, err := r.DataSource.TxOrPlain(ctx).Section.Get(ctx, id)
 	if err != nil {
 		if model.IsNotFound(err) {
 			return domain.Section{}, domain.ErrSectionNotFound
@@ -64,7 +72,8 @@ func (r *SectionRepository) FetchByID(ctx context.Context, id uuid.UUID) (domain
 }
 
 func (r *SectionRepository) Update(ctx context.Context, section domain.Section) error {
-	return r.client.UpdateOneID(section.ID).
+	return r.DataSource.TxOrPlain(ctx).Section.
+		UpdateOneID(section.ID).
 		SetDescription(section.Description).
 		SetIndex(section.Index).
 		SetTitle(section.Title).
@@ -77,17 +86,21 @@ func (r *SectionRepository) Update(ctx context.Context, section domain.Section) 
 // Reference: https://gngsn.tistory.com/189
 // I don't think entgo supports this at the moment.
 func (r *SectionRepository) SaveIndexes(ctx context.Context, sections []domain.Section) error {
+	client := r.DataSource.TxOrPlain(ctx).Section
+
 	for _, section := range sections {
-		err := r.client.UpdateOneID(section.ID).SetIndex(section.Index).Exec(ctx)
+		err := client.UpdateOneID(section.ID).SetIndex(section.Index).Exec(ctx)
 		if err != nil {
 			return err
 		}
 	}
+
 	return nil
 }
 
 func (r *SectionRepository) FetchAllByTaskID(ctx context.Context, taskID uuid.UUID, opt domain.FetchSectionsOption) ([]domain.Section, error) {
-	builder := r.client.Query().
+	builder := r.DataSource.TxOrPlain(ctx).Section.
+		Query().
 		Where(section.TaskID(taskID)).
 		Order(section.ByIndex(sql.OrderAsc()))
 

@@ -6,22 +6,28 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/oneee-playground/r2d2-api-server/internal/domain"
+	"github.com/oneee-playground/r2d2-api-server/internal/global/tx"
+	"github.com/oneee-playground/r2d2-api-server/internal/infra/data/ent/datasource"
 	"github.com/oneee-playground/r2d2-api-server/internal/infra/data/ent/model"
 	"github.com/oneee-playground/r2d2-api-server/internal/infra/data/ent/model/submission"
 )
 
 type SubmissionRepository struct {
-	client *model.SubmissionClient
+	*datasource.DataSource
 }
 
-var _ domain.SubmissionRepository = (*SubmissionRepository)(nil)
+var (
+	_ domain.SubmissionRepository = (*SubmissionRepository)(nil)
+	_ tx.DataSource               = (*SubmissionRepository)(nil)
+)
 
-func NewSubmissionRepository(client *model.SubmissionClient) *SubmissionRepository {
-	return &SubmissionRepository{client: client}
+func NewSubmissionRepository(ds *datasource.DataSource) *SubmissionRepository {
+	return &SubmissionRepository{DataSource: ds}
 }
 
 func (r *SubmissionRepository) Create(ctx context.Context, submission domain.Submission) error {
-	return r.client.Create().
+	return r.DataSource.TxOrPlain(ctx).Submission.
+		Create().
 		SetID(submission.ID).
 		SetIsDone(submission.IsDone).
 		SetRepository(submission.Repository).
@@ -33,7 +39,7 @@ func (r *SubmissionRepository) Create(ctx context.Context, submission domain.Sub
 }
 
 func (r *SubmissionRepository) FetchByID(ctx context.Context, id uuid.UUID) (domain.Submission, error) {
-	entity, err := r.client.Get(ctx, id)
+	entity, err := r.DataSource.TxOrPlain(ctx).Submission.Get(ctx, id)
 	if err != nil {
 		if model.IsNotFound(err) {
 			return domain.Submission{}, domain.ErrSubmissionNotFound
@@ -55,17 +61,20 @@ func (r *SubmissionRepository) FetchByID(ctx context.Context, id uuid.UUID) (dom
 }
 
 func (r *SubmissionRepository) UndoneExists(ctx context.Context, taskID uuid.UUID, userID uuid.UUID) (bool, error) {
-	return r.client.Query().Where(
-		submission.And(
-			submission.TaskID(taskID),
-			submission.UserID(userID),
-			submission.IsDone(false),
-		),
-	).Exist(ctx)
+	return r.DataSource.TxOrPlain(ctx).Submission.
+		Query().
+		Where(
+			submission.And(
+				submission.TaskID(taskID),
+				submission.UserID(userID),
+				submission.IsDone(false),
+			),
+		).Exist(ctx)
 }
 
 func (r *SubmissionRepository) Update(ctx context.Context, submission domain.Submission) error {
-	return r.client.UpdateOneID(submission.ID).
+	return r.DataSource.TxOrPlain(ctx).Submission.
+		UpdateOneID(submission.ID).
 		SetIsDone(submission.IsDone).
 		SetRepository(submission.Repository).
 		SetCommitHash(submission.CommitHash).
@@ -74,7 +83,8 @@ func (r *SubmissionRepository) Update(ctx context.Context, submission domain.Sub
 }
 
 func (r *SubmissionRepository) FetchPaginated(ctx context.Context, taskID uuid.UUID, offset int, limit int) ([]domain.Submission, error) {
-	models, err := r.client.Query().
+	models, err := r.DataSource.TxOrPlain(ctx).Submission.
+		Query().
 		Where(submission.TaskID(taskID)).
 		WithUser().
 		Order(submission.ByTimestamp(sql.OrderDesc())).

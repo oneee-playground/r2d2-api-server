@@ -11,6 +11,7 @@ import (
 	"github.com/oneee-playground/r2d2-api-server/internal/global/status"
 	auth_module "github.com/oneee-playground/r2d2-api-server/internal/module/auth"
 	"github.com/oneee-playground/r2d2-api-server/test/mocks"
+	"github.com/oneee-playground/r2d2-api-server/test/stubs"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -29,6 +30,9 @@ type AuthUsecaseSuite struct {
 		tokenIssuer    *mocks.MockTokenIssuer
 		userRepository *mocks.MockUserRepository
 	}
+	stub struct {
+		locker *stubs.StubLocker
+	}
 }
 
 func (s *AuthUsecaseSuite) SetupTest() {
@@ -36,8 +40,9 @@ func (s *AuthUsecaseSuite) SetupTest() {
 	s.mock.oauth = mocks.NewMockOAuthClient(s.ctl)
 	s.mock.tokenIssuer = mocks.NewMockTokenIssuer(s.ctl)
 	s.mock.userRepository = mocks.NewMockUserRepository(s.ctl)
+	s.stub.locker = stubs.NewStubLocker()
 
-	s.usecase = auth_module.NewAuthUsecase(s.mock.oauth, s.mock.tokenIssuer, s.mock.userRepository)
+	s.usecase = auth_module.NewAuthUsecase(s.mock.oauth, s.mock.tokenIssuer, s.mock.userRepository, s.stub.locker)
 }
 
 func (s *AuthUsecaseSuite) TestSignIn() {

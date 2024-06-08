@@ -9,20 +9,24 @@ import (
 	"github.com/oneee-playground/r2d2-api-server/internal/domain"
 	"github.com/oneee-playground/r2d2-api-server/internal/domain/dto"
 	"github.com/oneee-playground/r2d2-api-server/internal/global/status"
+	"github.com/oneee-playground/r2d2-api-server/internal/global/tx"
 	"github.com/pkg/errors"
 )
 
 type sectionUsecase struct {
+	lock tx.Locker
+
 	taskRepository    domain.TaskRepository
 	sectionRepository domain.SectionRepository
 }
 
 var _ domain.SectionUsecase = (*sectionUsecase)(nil)
 
-func NewSectionUsecase(sr domain.SectionRepository, tr domain.TaskRepository) *sectionUsecase {
+func NewSectionUsecase(sr domain.SectionRepository, tr domain.TaskRepository, l tx.Locker) *sectionUsecase {
 	return &sectionUsecase{
 		sectionRepository: sr,
 		taskRepository:    tr,
+		lock:              l,
 	}
 }
 
@@ -44,7 +48,24 @@ func (s *sectionUsecase) GetList(ctx context.Context, in dto.IDInput) (out *dto.
 }
 
 func (s *sectionUsecase) CreateSection(ctx context.Context, in dto.CreateSectionInput) (err error) {
-	// TODO: put it into transaction
+	ctx, err = tx.NewAtomic(ctx, tx.AtomicOpts{
+		ReadOnly: false,
+		DataSources: []any{
+			s.taskRepository,
+			s.sectionRepository,
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "starting atomic transaction")
+	}
+	defer tx.Evaluate(ctx, &err)
+
+	ctx, release, err := s.lock.Acquire(ctx, "task", in.ID.String())
+	if err != nil {
+		return errors.Wrap(err, "acquiring lock")
+	}
+	defer release()
+
 	taskID := in.ID
 
 	if err := s.assureTaskExists(ctx, taskID); err != nil {
@@ -73,6 +94,18 @@ func (s *sectionUsecase) CreateSection(ctx context.Context, in dto.CreateSection
 }
 
 func (s *sectionUsecase) UpdateSection(ctx context.Context, in dto.UpdateSectionInput) (err error) {
+	ctx, err = tx.NewAtomic(ctx, tx.AtomicOpts{
+		ReadOnly: false,
+		DataSources: []any{
+			s.taskRepository,
+			s.sectionRepository,
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "starting atomic transaction")
+	}
+	defer tx.Evaluate(ctx, &err)
+
 	if err := s.assureTaskExists(ctx, in.TaskID); err != nil {
 		return err
 	}
@@ -100,6 +133,24 @@ func (s *sectionUsecase) UpdateSection(ctx context.Context, in dto.UpdateSection
 }
 
 func (s *sectionUsecase) ChangeIndex(ctx context.Context, in dto.SectionIndexInput) (err error) {
+	ctx, err = tx.NewAtomic(ctx, tx.AtomicOpts{
+		ReadOnly: false,
+		DataSources: []any{
+			s.taskRepository,
+			s.sectionRepository,
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "starting atomic transaction")
+	}
+	defer tx.Evaluate(ctx, &err)
+
+	ctx, release, err := s.lock.Acquire(ctx, "task", in.TaskID.String())
+	if err != nil {
+		return errors.Wrap(err, "acquiring lock")
+	}
+	defer release()
+
 	if err := s.assureTaskExists(ctx, in.TaskID); err != nil {
 		return err
 	}

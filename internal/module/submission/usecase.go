@@ -11,10 +11,13 @@ import (
 	"github.com/oneee-playground/r2d2-api-server/internal/global/auth"
 	"github.com/oneee-playground/r2d2-api-server/internal/global/event"
 	"github.com/oneee-playground/r2d2-api-server/internal/global/status"
+	"github.com/oneee-playground/r2d2-api-server/internal/global/tx"
 	"github.com/pkg/errors"
 )
 
 type submissionUsecase struct {
+	lock tx.Locker
+
 	taskRepository       domain.TaskRepository
 	submissionRepository domain.SubmissionRepository
 	eventRepository      domain.EventRepository
@@ -25,13 +28,14 @@ var _ domain.SubmissionUsecase = (*submissionUsecase)(nil)
 
 func NewSubmissionUsecase(
 	tr domain.TaskRepository, sr domain.SubmissionRepository,
-	er domain.EventRepository, ep event.Publisher,
+	er domain.EventRepository, ep event.Publisher, l tx.Locker,
 ) *submissionUsecase {
 	return &submissionUsecase{
 		taskRepository:       tr,
 		submissionRepository: sr,
 		eventRepository:      er,
 		eventPublisher:       ep,
+		lock:                 l,
 	}
 }
 
@@ -48,7 +52,25 @@ func (u *submissionUsecase) GetList(ctx context.Context, in dto.SubmissionListIn
 }
 
 func (u *submissionUsecase) Submit(ctx context.Context, in dto.SubmissionInput) (out *dto.IDOutput, err error) {
-	// TODO: Make the logic transactional
+	ctx, err = tx.NewAtomic(ctx, tx.AtomicOpts{
+		ReadOnly: false,
+		DataSources: []any{
+			u.taskRepository,
+			u.submissionRepository,
+			u.eventRepository,
+		},
+	})
+	if err != nil {
+		return nil, errors.Wrap(err, "starting atomic transaction")
+	}
+	defer tx.Evaluate(ctx, &err)
+
+	ctx, release, err := u.lock.Acquire(ctx, "task", in.ID.String())
+	if err != nil {
+		return nil, errors.Wrap(err, "acquiring lock")
+	}
+	defer release()
+
 	info := auth.MustExtract(ctx)
 
 	taskID := in.ID
@@ -105,7 +127,24 @@ func (u *submissionUsecase) Submit(ctx context.Context, in dto.SubmissionInput) 
 }
 
 func (u *submissionUsecase) DecideApproval(ctx context.Context, in dto.SubmissionDecisionInput) (err error) {
-	// TODO: Make the logic transactional
+	ctx, err = tx.NewAtomic(ctx, tx.AtomicOpts{
+		ReadOnly: false,
+		DataSources: []any{
+			u.taskRepository,
+			u.submissionRepository,
+			u.eventPublisher,
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "starting atomic transaction")
+	}
+	defer tx.Evaluate(ctx, &err)
+
+	ctx, release, err := u.lock.Acquire(ctx, "task", in.TaskID.String())
+	if err != nil {
+		return errors.Wrap(err, "acquiring lock")
+	}
+	defer release()
 
 	if err := u.assureTaskExists(ctx, in.TaskID); err != nil {
 		return err
@@ -149,7 +188,25 @@ func (u *submissionUsecase) DecideApproval(ctx context.Context, in dto.Submissio
 }
 
 func (u *submissionUsecase) Cancel(ctx context.Context, in dto.SubmissionIDInput) (err error) {
-	// TODO: Make the logic transactional
+	ctx, err = tx.NewAtomic(ctx, tx.AtomicOpts{
+		ReadOnly: false,
+		DataSources: []any{
+			u.taskRepository,
+			u.submissionRepository,
+			u.eventPublisher,
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "starting atomic transaction")
+	}
+	defer tx.Evaluate(ctx, &err)
+
+	ctx, release, err := u.lock.Acquire(ctx, "task", in.TaskID.String())
+	if err != nil {
+		return errors.Wrap(err, "acquiring lock")
+	}
+	defer release()
+
 	info := auth.MustExtract(ctx)
 
 	if err := u.assureTaskExists(ctx, in.TaskID); err != nil {

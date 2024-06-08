@@ -8,18 +8,22 @@ import (
 	"github.com/oneee-playground/r2d2-api-server/internal/domain"
 	"github.com/oneee-playground/r2d2-api-server/internal/domain/dto"
 	"github.com/oneee-playground/r2d2-api-server/internal/global/status"
+	"github.com/oneee-playground/r2d2-api-server/internal/global/tx"
 	"github.com/pkg/errors"
 )
 
 type taskUsecase struct {
+	lock tx.Locker
+
 	taskRepository domain.TaskRepository
 }
 
 var _ domain.TaskUsecase = (*taskUsecase)(nil)
 
-func NewTaskUsecase(tr domain.TaskRepository) *taskUsecase {
+func NewTaskUsecase(tr domain.TaskRepository, l tx.Locker) *taskUsecase {
 	return &taskUsecase{
 		taskRepository: tr,
+		lock:           l,
 	}
 }
 
@@ -81,6 +85,21 @@ func (u *taskUsecase) UpdateTask(ctx context.Context, in dto.UpdateTaskInput) (e
 }
 
 func (u *taskUsecase) ChangeStage(ctx context.Context, in dto.TaskStageInput) (err error) {
+	ctx, err = tx.NewAtomic(ctx, tx.AtomicOpts{
+		ReadOnly:    false,
+		DataSources: []any{u.taskRepository},
+	})
+	if err != nil {
+		return errors.Wrap(err, "starting atomic transaction")
+	}
+	defer tx.Evaluate(ctx, &err)
+
+	ctx, release, err := u.lock.Acquire(ctx, "task", in.ID.String())
+	if err != nil {
+		return errors.Wrap(err, "acquiring lock")
+	}
+	defer release()
+
 	task, err := u.taskRepository.FetchByID(ctx, in.ID)
 	if err != nil {
 		if errors.Is(err, domain.ErrTaskNotFound) {

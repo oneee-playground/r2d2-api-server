@@ -11,6 +11,7 @@ import (
 	"github.com/oneee-playground/r2d2-api-server/internal/global/status"
 	resource_module "github.com/oneee-playground/r2d2-api-server/internal/module/resource"
 	"github.com/oneee-playground/r2d2-api-server/test/mocks"
+	"github.com/oneee-playground/r2d2-api-server/test/stubs"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -28,14 +29,18 @@ type ResourceUsecaseSuite struct {
 		taskRepository     *mocks.MockTaskRepository
 		resourceRepository *mocks.MockResourceRepository
 	}
+	stub struct {
+		locker *stubs.StubLocker
+	}
 }
 
 func (s *ResourceUsecaseSuite) SetupTest() {
 	s.ctl = gomock.NewController(s.T())
 	s.mock.taskRepository = mocks.NewMockTaskRepository(s.ctl)
 	s.mock.resourceRepository = mocks.NewMockResourceRepository(s.ctl)
+	s.stub.locker = stubs.NewStubLocker()
 
-	s.usecase = resource_module.NewResourceUsecase(s.mock.resourceRepository, s.mock.taskRepository)
+	s.usecase = resource_module.NewResourceUsecase(s.mock.resourceRepository, s.mock.taskRepository, s.stub.locker)
 }
 
 func (s *ResourceUsecaseSuite) TestCreateResource() {
