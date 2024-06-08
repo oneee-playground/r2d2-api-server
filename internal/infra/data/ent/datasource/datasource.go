@@ -11,6 +11,8 @@ type DataSource struct {
 	client *model.Client
 }
 
+var _ tx.DataSource = (*DataSource)(nil)
+
 func (ds *DataSource) Key() any {
 	return _txKey{}
 }
