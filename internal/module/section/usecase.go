@@ -82,6 +82,7 @@ func (s *sectionUsecase) CreateSection(ctx context.Context, in dto.CreateSection
 		Title:       in.Title,
 		Description: in.Description,
 		Type:        domain.SectionType(in.Type),
+		RPM:         in.RPM,
 		TaskID:      taskID,
 		Index:       count,
 	}

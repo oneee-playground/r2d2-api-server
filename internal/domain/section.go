@@ -23,7 +23,10 @@ type Section struct {
 	Description string
 	// Index holds the order of section in the task.
 	Index uint8
-	Type  SectionType
+	// RPM stands for 'requests per minute'.
+	// It will be non-zero when section's type is load testing.
+	RPM  uint64
+	Type SectionType
 
 	TaskID uuid.UUID
 	Task   *Task

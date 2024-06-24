@@ -17,6 +17,7 @@ type Resource struct {
 type Section struct {
 	ID   uuid.UUID          `json:"id"`
 	Type domain.SectionType `json:"type"`
+	RPM  uint64             `json:"rpm"`
 }
 
 type Submission struct {
