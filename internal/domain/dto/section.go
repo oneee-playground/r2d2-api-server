@@ -7,6 +7,7 @@ type SectionListElem struct {
 	Type        string    `json:"type"`
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
+	RPM         uint64    `json:"rpm"`
 }
 
 type SectionListOutput []SectionListElem
@@ -15,6 +16,7 @@ type SectionInput struct {
 	Type        string `json:"type" binding:"required" validate:"section_type"`
 	Title       string `json:"title" binding:"required"`
 	Description string `json:"description" binding:"required"`
+	RPM         uint64 `json:"rpm" binding:"required"`
 }
 
 type CreateSectionInput struct {

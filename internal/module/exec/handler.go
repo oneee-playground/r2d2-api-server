@@ -149,6 +149,7 @@ func (h *EventHandler) EnqueueJob(ctx context.Context, topic event.Topic, payloa
 		job.Sections[idx] = Section{
 			ID:   section.ID,
 			Type: section.Type,
+			RPM:  section.RPM,
 		}
 	}
 

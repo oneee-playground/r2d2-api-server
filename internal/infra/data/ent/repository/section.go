@@ -46,6 +46,7 @@ func (r *SectionRepository) Create(ctx context.Context, section domain.Section) 
 		SetIndex(section.Index).
 		SetTitle(section.Title).
 		SetType(string(section.Type)).
+		SetRpm(section.RPM).
 		SetTaskID(section.TaskID).
 		Exec(ctx)
 }
@@ -65,6 +66,7 @@ func (r *SectionRepository) FetchByID(ctx context.Context, id uuid.UUID) (domain
 		Description: entity.Description,
 		Index:       entity.Index,
 		Type:        domain.SectionType(entity.Type),
+		RPM:         entity.Rpm,
 		TaskID:      entity.TaskID,
 	}
 
@@ -78,6 +80,7 @@ func (r *SectionRepository) Update(ctx context.Context, section domain.Section) 
 		SetIndex(section.Index).
 		SetTitle(section.Title).
 		SetType(string(section.Type)).
+		SetRpm(section.RPM).
 		SetTaskID(section.TaskID).
 		Exec(ctx)
 }
@@ -128,6 +131,7 @@ func (r *SectionRepository) FetchAllByTaskID(ctx context.Context, taskID uuid.UU
 			Description: model.Description,
 			Index:       model.Index,
 			Type:        model.Type,
+			RPM:         model.RPM,
 			TaskID:      model.TaskID,
 		}
 	}

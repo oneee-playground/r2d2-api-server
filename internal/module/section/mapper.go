@@ -13,6 +13,7 @@ func toSectionListOutput(sections []domain.Section) *dto.SectionListOutput {
 			Type:        string(section.Type),
 			Title:       section.Title,
 			Description: section.Description,
+			RPM:         section.RPM,
 		}
 	}
 
