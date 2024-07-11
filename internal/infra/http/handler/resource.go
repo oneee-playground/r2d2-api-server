@@ -13,6 +13,10 @@ type ResourceHandler struct {
 	usecase domain.ResourceUsecase
 }
 
+func NewResourceHandler(usecase domain.ResourceUsecase) *ResourceHandler {
+	return &ResourceHandler{usecase: usecase}
+}
+
 func (h *ResourceHandler) HandleGetList(c *gin.Context) {
 	var in dto.IDInput
 

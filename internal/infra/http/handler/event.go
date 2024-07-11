@@ -13,6 +13,10 @@ type EventHandler struct {
 	usecase domain.EventUsecase
 }
 
+func NewEventHandler(usecase domain.EventUsecase) *EventHandler {
+	return &EventHandler{usecase: usecase}
+}
+
 func (h *EventHandler) HandleGetAll(c *gin.Context) {
 	var in dto.SubmissionIDInput
 

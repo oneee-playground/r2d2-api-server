@@ -13,6 +13,10 @@ type SectionHandler struct {
 	usecase domain.SectionUsecase
 }
 
+func NewSectionHandler(usecase domain.SectionUsecase) *SectionHandler {
+	return &SectionHandler{usecase: usecase}
+}
+
 func (h *SectionHandler) HandleGetList(c *gin.Context) {
 	var in dto.IDInput
 

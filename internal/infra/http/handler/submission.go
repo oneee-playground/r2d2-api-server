@@ -13,6 +13,10 @@ type SubmissionHandler struct {
 	usecase domain.SubmissionUsecase
 }
 
+func NewSubmissionHandler(usecase domain.SubmissionUsecase) *SubmissionHandler {
+	return &SubmissionHandler{usecase: usecase}
+}
+
 func (h *SubmissionHandler) HandleGetList(c *gin.Context) {
 	var in dto.SubmissionListInput
 

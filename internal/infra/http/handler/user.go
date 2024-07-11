@@ -11,6 +11,10 @@ type UserHandler struct {
 	usecase domain.UserUsecase
 }
 
+func NewUserHandler(usecase domain.UserUsecase) *UserHandler {
+	return &UserHandler{usecase: usecase}
+}
+
 func (h *UserHandler) HandleSelfInfo(c *gin.Context) {
 	out, err := h.usecase.GetSelfInfo(c.Request.Context())
 	if err != nil {
