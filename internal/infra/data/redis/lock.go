@@ -14,6 +14,10 @@ type RedisLocker struct {
 
 var _ tx.Locker = (*RedisLocker)(nil)
 
+func NewLocker(lock rueidislock.Locker) *RedisLocker {
+	return &RedisLocker{underlying: lock}
+}
+
 func (l *RedisLocker) AcquireKey(ctx context.Context, key string) (context.Context, context.CancelFunc, error) {
 	ctx, release, err := l.underlying.WithContext(ctx, key)
 	if err != nil {

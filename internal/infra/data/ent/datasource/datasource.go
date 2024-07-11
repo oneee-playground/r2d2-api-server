@@ -13,13 +13,17 @@ type DataSource struct {
 
 var _ tx.DataSource = (*DataSource)(nil)
 
+func New(client *model.Client) *DataSource {
+	return &DataSource{client: client}
+}
+
 func (ds *DataSource) Key() any {
 	return _txKey{}
 }
 
 func (ds *DataSource) NewTxFunc() tx.NewTxFunc {
 	return func(ctx context.Context, opts tx.AtomicOpts) (tx.Tx, error) {
-		return New(ctx, ds.client, opts)
+		return newTx(ctx, ds.client, opts)
 	}
 }
 
