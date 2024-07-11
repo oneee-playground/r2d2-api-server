@@ -8,6 +8,7 @@ type SectionListElem struct {
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
 	RPM         uint64    `json:"rpm"`
+	Example     string    `json:"example"`
 }
 
 type SectionListOutput []SectionListElem

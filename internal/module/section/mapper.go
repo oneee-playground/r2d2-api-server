@@ -14,6 +14,7 @@ func toSectionListOutput(sections []domain.Section) *dto.SectionListOutput {
 			Title:       section.Title,
 			Description: section.Description,
 			RPM:         section.RPM,
+			Example:     section.Example,
 		}
 	}
 

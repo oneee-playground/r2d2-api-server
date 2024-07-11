@@ -27,6 +27,10 @@ type Section struct {
 	// It will be non-zero when section's type is load testing.
 	RPM  uint64
 	Type SectionType
+	// Example format of request-response.
+	// It is json-formatted string.
+	// TODO: Find a better way to represent this.
+	Example string
 
 	TaskID uuid.UUID
 	Task   *Task
