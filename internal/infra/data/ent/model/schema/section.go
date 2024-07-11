@@ -21,6 +21,7 @@ func (Section) Fields() []ent.Field {
 		field.Uint8("index"),
 		field.Uint64("rpm"),
 		field.String("type"),
+		field.String("example"),
 		field.UUID("taskID", uuid.New()),
 	}
 }

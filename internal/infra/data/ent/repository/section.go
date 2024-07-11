@@ -112,7 +112,7 @@ func (r *SectionRepository) FetchAllByTaskID(ctx context.Context, taskID uuid.UU
 	if opt.IncludeContent {
 		models, err = builder.All(ctx)
 	} else {
-		// Don't include title and description
+		// Don't include title, description, and example.
 		models, err = builder.Select(
 			section.FieldID, section.FieldIndex,
 			section.FieldType, section.FieldTaskID,
@@ -132,6 +132,7 @@ func (r *SectionRepository) FetchAllByTaskID(ctx context.Context, taskID uuid.UU
 			Index:       model.Index,
 			Type:        model.Type,
 			RPM:         model.RPM,
+			Example:     model.Example,
 			TaskID:      model.TaskID,
 		}
 	}
