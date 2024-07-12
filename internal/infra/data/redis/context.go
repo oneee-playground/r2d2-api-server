@@ -16,6 +16,10 @@ type RedisExecContextStroage struct {
 
 var _ exec_module.ExecContextStroage = (*RedisExecContextStroage)(nil)
 
+func NewExecContextStroage(client rueidis.Client) *RedisExecContextStroage {
+	return &RedisExecContextStroage{client: client}
+}
+
 func (s *RedisExecContextStroage) Get(ctx context.Context, submissionID uuid.UUID) (exec_module.ExecContext, error) {
 	cmd := s.client.B().
 		Get().

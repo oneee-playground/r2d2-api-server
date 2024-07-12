@@ -1,4 +1,4 @@
-package event
+package event_module
 
 import (
 	"context"
@@ -14,6 +14,10 @@ type eventUsecase struct {
 }
 
 var _ domain.EventUsecase = (*eventUsecase)(nil)
+
+func NewEventUsecase(er domain.EventRepository) *eventUsecase {
+	return &eventUsecase{eventRepository: er}
+}
 
 func (u *eventUsecase) GetAllFromSubmission(ctx context.Context, in dto.SubmissionIDInput) (out *dto.EventListOutput, err error) {
 	events, err := u.eventRepository.FetchAllBySubmissionID(ctx, in.SubmissionID)

@@ -13,6 +13,10 @@ type AuthHandler struct {
 	usecase domain.AuthUsecase
 }
 
+func NewAuthHandler(usecase domain.AuthUsecase) *AuthHandler {
+	return &AuthHandler{usecase: usecase}
+}
+
 func (h *AuthHandler) HandleSignIn(c *gin.Context) {
 	var in dto.SignInInput
 

@@ -22,7 +22,7 @@ func (tx *EntTx) Rollback(ctx context.Context) error {
 
 type _txKey struct{}
 
-func New(ctx context.Context, client *model.Client, opts tx.AtomicOpts) (*EntTx, error) {
+func newTx(ctx context.Context, client *model.Client, opts tx.AtomicOpts) (*EntTx, error) {
 	tx, err := client.BeginTx(ctx, &sql.TxOptions{
 		Isolation: sql.LevelReadCommitted,
 		ReadOnly:  opts.ReadOnly,

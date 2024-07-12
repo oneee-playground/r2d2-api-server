@@ -13,6 +13,10 @@ type TaskHandler struct {
 	usecase domain.TaskUsecase
 }
 
+func NewTaskHandler(usecase domain.TaskUsecase) *TaskHandler {
+	return &TaskHandler{usecase: usecase}
+}
+
 func (h *TaskHandler) HandleGetList(c *gin.Context) {
 	out, err := h.usecase.GetList(c.Request.Context())
 	if err != nil {
