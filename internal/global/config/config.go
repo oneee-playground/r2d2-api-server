@@ -8,6 +8,7 @@ type Config struct {
 	GitHubConfig GitHubConfig
 	AWSConfig    AWSConfig
 	RedisConfig  RedisConfig
+	MYSQLConfig  MYSQLConfig
 	EmailConfig  EmailConfig
 }
 
@@ -44,6 +45,11 @@ type RedisConfig struct {
 	DBNum int
 }
 
+type MYSQLConfig struct {
+	Addr string
+	Pass string
+}
+
 type EmailConfig struct {
 	Host     string
 	Port     int
@@ -58,4 +64,5 @@ func GetJWTConfig() JWTConfig       { return loaded.JWTConfig }
 func GetGitHubConfig() GitHubConfig { return loaded.GitHubConfig }
 func GetAWSConfig() AWSConfig       { return loaded.AWSConfig }
 func GetRedisConfig() RedisConfig   { return loaded.RedisConfig }
+func GetMYSQLConfig() MYSQLConfig   { return loaded.MYSQLConfig }
 func GetEmailConfig() EmailConfig   { return loaded.EmailConfig }

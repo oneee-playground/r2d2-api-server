@@ -2,10 +2,13 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+
+	_ "github.com/go-sql-driver/mysql"
 
 	aws_config "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
@@ -98,9 +101,19 @@ func main() {
 		},
 	})
 
-	entClient := model.NewClient()
+	mysqlConf := config.GetMYSQLConfig()
+
+	entClient, err := model.Open("mysql", fmt.Sprintf("root:%s@tcp(%s)/r2d2", mysqlConf.Pass, mysqlConf.Addr))
+	if err != nil {
+		logger.Panic("failed to open client", zap.Error(err))
+	}
+
 	datasource := datasource.New(entClient)
 	defer entClient.Close()
+
+	if err := datasource.Migrate(ctx); err != nil {
+		logger.Panic("failed to migrate db", zap.Error(err))
+	}
 
 	var (
 		eventRepo      = repository.NewEventRepository(datasource)
