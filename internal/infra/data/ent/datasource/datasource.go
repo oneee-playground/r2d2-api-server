@@ -17,6 +17,10 @@ func New(client *model.Client) *DataSource {
 	return &DataSource{client: client}
 }
 
+func (ds *DataSource) Migrate(ctx context.Context) error {
+	return ds.client.Schema.Create(ctx)
+}
+
 func (ds *DataSource) Key() any {
 	return _txKey{}
 }

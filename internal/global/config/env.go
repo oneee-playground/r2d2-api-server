@@ -16,7 +16,7 @@ var _ Loader = (*EnvLoader)(nil)
 func (el *EnvLoader) Fill(ctx context.Context, conf *Config) error {
 	confFuncs := []func(conf *Config) error{
 		el.serverConfig, el.jwtConfig, el.gitHubConfig,
-		el.awsConfig, el.redisConfig, el.emailConfig,
+		el.awsConfig, el.redisConfig, el.emailConfig, el.mysqlConfig,
 	}
 
 	for _, f := range confFuncs {
@@ -72,14 +72,14 @@ func (el *EnvLoader) awsConfig(conf *Config) error {
 		TestEventQueueURL:       os.Getenv("AWS_SQS_TEST_EVENT_QUEUE_URL"),
 	}
 
-	pollIntervalRaw := os.Getenv("AWS_SQS_POLL_INTERVAL")
+	pollIntervalRaw := os.Getenv("AWS_SQS_POLL_INTERVAL_SECOND")
 
 	pollInterval, err := strconv.ParseInt(pollIntervalRaw, 10, 64)
 	if err != nil {
 		return errors.Wrap(err, "parsing poll interval")
 	}
 
-	awsConf.SQSConfig.PollInterval = time.Duration(pollInterval)
+	awsConf.SQSConfig.PollInterval = time.Duration(pollInterval) * time.Second
 
 	conf.AWSConfig = awsConf
 	return nil
@@ -100,6 +100,16 @@ func (el *EnvLoader) redisConfig(conf *Config) error {
 	redisConf.DBNum = int(redisDBNum)
 
 	conf.RedisConfig = redisConf
+	return nil
+}
+
+func (el *EnvLoader) mysqlConfig(conf *Config) error {
+	mysqlConf := MYSQLConfig{}
+
+	mysqlConf.Addr = os.Getenv("MYSQL_ADDR")
+	mysqlConf.Pass = os.Getenv("MYSQL_PASSWORD")
+
+	conf.MYSQLConfig = mysqlConf
 	return nil
 }
 
