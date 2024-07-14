@@ -26,7 +26,9 @@ type GitHubConfig struct {
 }
 
 type AWSConfig struct {
-	Region string
+	Region          string
+	AccessKeyID     string
+	SecretAccessKey string
 
 	SQSConfig SQSConfig
 }

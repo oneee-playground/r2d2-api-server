@@ -65,6 +65,8 @@ func (el *EnvLoader) awsConfig(conf *Config) error {
 	awsConf := AWSConfig{}
 
 	awsConf.Region = os.Getenv("AWS_REGION")
+	awsConf.AccessKeyID = os.Getenv("AWS_ACCESS_KEY_ID")
+	awsConf.SecretAccessKey = os.Getenv("AWS_SECRET_ACCESS_KEY")
 	awsConf.SQSConfig = SQSConfig{
 		JobQueueURL:             os.Getenv("AWS_SQS_JOB_QUEUE_URL"),
 		SubmissionEventQueueURL: os.Getenv("AWS_SQS_SUBMISSION_EVENT_QUEUE_URL"),

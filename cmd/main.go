@@ -10,7 +10,8 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 
-	aws_config "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/gin-gonic/gin"
@@ -75,9 +76,9 @@ func main() {
 
 	awsConfig := config.GetAWSConfig()
 
-	awsConf, err := aws_config.LoadDefaultConfig(context.Background(), aws_config.WithRegion(awsConfig.Region))
-	if err != nil {
-		logger.Panic("failed to load aws config", zap.Error(err))
+	awsConf := aws.Config{
+		Region:      awsConfig.Region,
+		Credentials: credentials.NewStaticCredentialsProvider(awsConfig.AccessKeyID, awsConfig.SecretAccessKey, ""),
 	}
 
 	lambdaClient := lambda.NewFromConfig(awsConf)
