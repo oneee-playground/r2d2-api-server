@@ -79,7 +79,7 @@ func (r *Router) Build() {
 		section.POST("", authRequired, adminOnly, r.SectionHandler.HandleCreateSection)
 	}
 
-	oneSection := router.Group("/tasks/:taskID/sections/:sectionID")
+	oneSection := router.Group("/tasks/:id/sections/:sectionID")
 	{
 		oneSection.PUT("", authRequired, adminOnly, r.SectionHandler.HandleUpdateSeciton)
 		oneSection.PATCH("/index", authRequired, adminOnly, r.SectionHandler.HandleChangeIndex)
@@ -98,7 +98,7 @@ func (r *Router) Build() {
 		submission.POST("", authRequired, memberOnly, r.SubmissionHandler.HandleSubmit)
 	}
 
-	oneSubmission := router.Group("/tasks/:taskID/submissions/:submissionID")
+	oneSubmission := router.Group("/tasks/:id/submissions/:submissionID")
 	{
 		oneSubmission.PATCH("", authRequired, adminOnly, r.SubmissionHandler.HandleDecideApproval)
 		oneSubmission.DELETE("", authRequired, memberOnly, r.SubmissionHandler.HandleCancel)

@@ -32,7 +32,7 @@ type SubmissionInput struct {
 }
 
 type SubmissionIDInput struct {
-	TaskID       uuid.UUID `uri:"taskID" binding:"required"`
+	TaskID       uuid.UUID `uri:"id" binding:"required"`
 	SubmissionID uuid.UUID `uri:"submissionID" binding:"required"`
 }
 

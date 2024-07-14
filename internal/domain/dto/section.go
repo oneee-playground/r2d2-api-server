@@ -26,7 +26,7 @@ type CreateSectionInput struct {
 }
 
 type SectionIDInput struct {
-	TaskID    uuid.UUID `uri:"taskID" binding:"required"`
+	TaskID    uuid.UUID `uri:"id" binding:"required"`
 	SectionID uuid.UUID `uri:"sectionID" binding:"required"`
 }
 
