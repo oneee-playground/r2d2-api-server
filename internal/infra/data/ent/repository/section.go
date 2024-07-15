@@ -125,14 +125,14 @@ func (r *SectionRepository) FetchAllByTaskID(ctx context.Context, taskID uuid.UU
 	}
 
 	sections := make([]domain.Section, len(models))
-	for idx, model := range sections {
+	for idx, model := range models {
 		sections[idx] = domain.Section{
 			ID:          model.ID,
 			Title:       model.Title,
 			Description: model.Description,
 			Index:       model.Index,
-			Type:        model.Type,
-			RPM:         model.RPM,
+			Type:        domain.SectionType(model.Type),
+			RPM:         model.Rpm,
 			Example:     model.Example,
 			TaskID:      model.TaskID,
 		}
