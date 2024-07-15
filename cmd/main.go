@@ -104,7 +104,7 @@ func main() {
 
 	mysqlConf := config.GetMYSQLConfig()
 
-	entClient, err := model.Open("mysql", fmt.Sprintf("root:%s@tcp(%s)/r2d2", mysqlConf.Pass, mysqlConf.Addr))
+	entClient, err := model.Open("mysql", fmt.Sprintf("root:%s@tcp(%s)/r2d2?parseTime=true", mysqlConf.Pass, mysqlConf.Addr))
 	if err != nil {
 		logger.Panic("failed to open client", zap.Error(err))
 	}
