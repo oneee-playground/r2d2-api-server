@@ -29,7 +29,7 @@ func (h *TaskHandler) HandleGetList(c *gin.Context) {
 
 func (h *TaskHandler) HandleGetTask(c *gin.Context) {
 	var in dto.IDInput
-	if err := c.ShouldBindJSON(&in); err != nil {
+	if err := c.ShouldBindUri(&in); err != nil {
 		c.Error(util.WrapWithBadRequest(err))
 		return
 	}
