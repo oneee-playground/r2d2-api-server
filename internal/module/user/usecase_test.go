@@ -46,7 +46,7 @@ func (s *UserUsecaseSuite) TestGetSelfInfo() {
 	}
 
 	testUserInfo := dto.UserInfo{
-		ID:         testUser.ID,
+		ID:         testUser.ID.String(),
 		Username:   testUser.Username,
 		ProfileURL: testUser.ProfileURL,
 		Role:       testUser.Role.String(),

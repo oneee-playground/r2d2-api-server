@@ -7,7 +7,7 @@ import (
 
 func toUserInfo(user domain.User) *dto.UserInfo {
 	return &dto.UserInfo{
-		ID:         user.ID,
+		ID:         user.ID.String(),
 		Username:   user.Username,
 		ProfileURL: user.ProfileURL,
 		Role:       user.Role.String(),

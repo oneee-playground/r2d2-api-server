@@ -1,14 +1,12 @@
 package dto
 
-import "github.com/google/uuid"
-
 type SectionListElem struct {
-	ID          uuid.UUID `json:"id"`
-	Type        string    `json:"type"`
-	Title       string    `json:"title"`
-	Description string    `json:"description"`
-	RPM         uint64    `json:"rpm"`
-	Example     string    `json:"example"`
+	ID          string `json:"id" binding:"uuid"`
+	Type        string `json:"type"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	RPM         uint64 `json:"rpm"`
+	Example     string `json:"example"`
 }
 
 type SectionListOutput []SectionListElem
@@ -26,8 +24,8 @@ type CreateSectionInput struct {
 }
 
 type SectionIDInput struct {
-	TaskID    uuid.UUID `uri:"id" binding:"required"`
-	SectionID uuid.UUID `uri:"sectionID" binding:"required"`
+	TaskID    string `uri:"id" binding:"required,uuid"`
+	SectionID string `uri:"sectionID" binding:"required,uuid"`
 }
 
 type UpdateSectionInput struct {

@@ -113,7 +113,8 @@ func (s *TaskUsecaseSuite) TestChangeStage() {
 			ctx := context.Background()
 
 			input := dto.TaskStageInput{
-				Stage: string(tc.targetStage),
+				IDInput: dto.IDInput{ID: uuid.Nil.String()},
+				Stage:   string(tc.targetStage),
 			}
 
 			tc.setup()

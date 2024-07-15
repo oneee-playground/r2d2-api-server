@@ -2,8 +2,6 @@ package dto
 
 import (
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type SubmissionPaginator struct {
@@ -16,10 +14,10 @@ type SubmissionListInput struct {
 }
 
 type SubmissionListElem struct {
-	ID        uuid.UUID `json:"id"`
+	ID        string    `json:"id" binding:"uuid"`
 	Timestamp time.Time `json:"timestamp"`
 	SourceURL string    `json:"sourceURL"`
-	IsDone    bool     `json:"isDone"`
+	IsDone    bool      `json:"isDone"`
 	User      UserInfo  `json:"user"`
 }
 
@@ -32,8 +30,8 @@ type SubmissionInput struct {
 }
 
 type SubmissionIDInput struct {
-	TaskID       uuid.UUID `uri:"id" binding:"required"`
-	SubmissionID uuid.UUID `uri:"submissionID" binding:"required"`
+	TaskID       string `uri:"id" binding:"required,uuid"`
+	SubmissionID string `uri:"submissionID" binding:"required,uuid"`
 }
 
 type SubmissionDecisionInput struct {

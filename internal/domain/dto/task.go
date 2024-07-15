@@ -1,19 +1,17 @@
 package dto
 
-import "github.com/google/uuid"
-
 type TaskListElem struct {
-	ID    uuid.UUID `json:"id"`
-	Title string    `json:"title"`
+	ID    string `json:"id" binding:"uuid"`
+	Title string `json:"title"`
 }
 
 type TaskListOutput []TaskListElem
 
 type TaskOutput struct {
-	ID          uuid.UUID `json:"id"`
-	Title       string    `json:"title"`
-	Description string    `json:"description"`
-	Stage       string    `json:"stage"`
+	ID          string `json:"id" binding:"uuid"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Stage       string `json:"stage"`
 }
 
 type TaskInput struct {

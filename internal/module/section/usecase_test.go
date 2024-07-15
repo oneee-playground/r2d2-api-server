@@ -94,7 +94,12 @@ func (s *SectionUsecaseSuite) TestUpdateSection() {
 
 			tc.setup()
 
-			err := s.usecase.UpdateSection(ctx, dto.UpdateSectionInput{})
+			err := s.usecase.UpdateSection(ctx, dto.UpdateSectionInput{
+				SectionIDInput: dto.SectionIDInput{
+					TaskID:    uuid.Nil.String(),
+					SectionID: uuid.Nil.String(),
+				},
+			})
 			s.True(tc.checkErr(err), err)
 		})
 	}
@@ -194,7 +199,8 @@ func (s *SectionUsecaseSuite) TestChangeIndex() {
 
 			in := dto.SectionIndexInput{
 				SectionIDInput: dto.SectionIDInput{
-					SectionID: tc.sectionID,
+					TaskID:    uuid.Nil.String(),
+					SectionID: tc.sectionID.String(),
 				},
 				Index: tc.index,
 			}

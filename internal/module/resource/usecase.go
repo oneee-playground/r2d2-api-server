@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/google/uuid"
 	"github.com/oneee-playground/r2d2-api-server/internal/domain"
 	"github.com/oneee-playground/r2d2-api-server/internal/domain/dto"
 	"github.com/oneee-playground/r2d2-api-server/internal/global/status"
@@ -29,7 +30,9 @@ func NewResourceUsecase(rr domain.ResourceRepository, tr domain.TaskRepository, 
 }
 
 func (u *resourceUsecase) GetList(ctx context.Context, in dto.IDInput) (out *dto.ResourceListOutput, err error) {
-	exists, err := u.taskRepository.ExistsByID(ctx, in.ID)
+	taskID := uuid.MustParse(in.ID)
+
+	exists, err := u.taskRepository.ExistsByID(ctx, taskID)
 	if err != nil {
 		return nil, errors.Wrap(err, "checking task exists")
 	}
@@ -38,7 +41,7 @@ func (u *resourceUsecase) GetList(ctx context.Context, in dto.IDInput) (out *dto
 		return nil, status.NewErr(http.StatusNotFound, "task not found")
 	}
 
-	resources, err := u.resourceRepository.FetchAllByTaskID(ctx, in.ID)
+	resources, err := u.resourceRepository.FetchAllByTaskID(ctx, taskID)
 	if err != nil {
 		return nil, errors.Wrap(err, "fetching resources")
 	}
@@ -47,6 +50,8 @@ func (u *resourceUsecase) GetList(ctx context.Context, in dto.IDInput) (out *dto
 }
 
 func (u *resourceUsecase) CreateResource(ctx context.Context, in dto.CreateResourceInput) (err error) {
+	taskID := uuid.MustParse(in.ID)
+
 	ctx, err = tx.NewAtomic(ctx, tx.AtomicOpts{
 		ReadOnly: false,
 		DataSources: []any{
@@ -59,13 +64,13 @@ func (u *resourceUsecase) CreateResource(ctx context.Context, in dto.CreateResou
 	}
 	defer tx.Evaluate(ctx, &err)
 
-	ctx, release, err := u.lock.Acquire(ctx, "task", in.ID.String())
+	ctx, release, err := u.lock.Acquire(ctx, "task", taskID.String())
 	if err != nil {
 		return errors.Wrap(err, "acquiring lock")
 	}
 	defer release()
 
-	task, err := u.taskRepository.FetchByID(ctx, in.ID)
+	task, err := u.taskRepository.FetchByID(ctx, taskID)
 	if err != nil {
 		if errors.Is(err, domain.ErrTaskNotFound) {
 			return status.NewErr(http.StatusNotFound, err.Error())
@@ -100,6 +105,8 @@ func (u *resourceUsecase) CreateResource(ctx context.Context, in dto.CreateResou
 }
 
 func (u *resourceUsecase) DeleteResource(ctx context.Context, in dto.ResourceIDInput) (err error) {
+	taskID := uuid.MustParse(in.ID)
+
 	ctx, err = tx.NewAtomic(ctx, tx.AtomicOpts{
 		ReadOnly: false,
 		DataSources: []any{
@@ -112,13 +119,13 @@ func (u *resourceUsecase) DeleteResource(ctx context.Context, in dto.ResourceIDI
 	}
 	defer tx.Evaluate(ctx, &err)
 
-	ctx, release, err := u.lock.Acquire(ctx, "task", in.ID.String())
+	ctx, release, err := u.lock.Acquire(ctx, "task", taskID.String())
 	if err != nil {
 		return errors.Wrap(err, "acquiring lock")
 	}
 	defer release()
 
-	task, err := u.taskRepository.FetchByID(ctx, in.ID)
+	task, err := u.taskRepository.FetchByID(ctx, taskID)
 	if err != nil {
 		if errors.Is(err, domain.ErrTaskNotFound) {
 			return status.NewErr(http.StatusNotFound, err.Error())

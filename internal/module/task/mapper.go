@@ -6,7 +6,7 @@ import (
 )
 
 func toIDOutput(task domain.Task) *dto.IDOutput {
-	return &dto.IDOutput{ID: task.ID}
+	return &dto.IDOutput{ID: task.ID.String()}
 }
 
 func toTaskListOutput(tasks []domain.Task) *dto.TaskListOutput {
@@ -14,7 +14,7 @@ func toTaskListOutput(tasks []domain.Task) *dto.TaskListOutput {
 
 	for i, task := range tasks {
 		out[i] = dto.TaskListElem{
-			ID:    task.ID,
+			ID:    task.ID.String(),
 			Title: task.Title,
 		}
 	}
@@ -24,7 +24,7 @@ func toTaskListOutput(tasks []domain.Task) *dto.TaskListOutput {
 
 func toTaskOutput(task domain.Task) *dto.TaskOutput {
 	return &dto.TaskOutput{
-		ID:          task.ID,
+		ID:          task.ID.String(),
 		Title:       task.Title,
 		Description: task.Description,
 		Stage:       string(task.Stage),

@@ -37,7 +37,9 @@ func (u *taskUsecase) GetList(ctx context.Context) (out *dto.TaskListOutput, err
 }
 
 func (u *taskUsecase) GetTask(ctx context.Context, in dto.IDInput) (out *dto.TaskOutput, err error) {
-	task, err := u.taskRepository.FetchByID(ctx, in.ID)
+	taskID := uuid.MustParse(in.ID)
+
+	task, err := u.taskRepository.FetchByID(ctx, taskID)
 	if err != nil {
 		if errors.Is(err, domain.ErrTaskNotFound) {
 			return nil, status.NewErr(http.StatusNotFound, err.Error())
@@ -65,7 +67,9 @@ func (u *taskUsecase) CreateTask(ctx context.Context, in dto.TaskInput) (out *dt
 }
 
 func (u *taskUsecase) UpdateTask(ctx context.Context, in dto.UpdateTaskInput) (err error) {
-	task, err := u.taskRepository.FetchByID(ctx, in.ID)
+	taskID := uuid.MustParse(in.ID)
+
+	task, err := u.taskRepository.FetchByID(ctx, taskID)
 	if err != nil {
 		if errors.Is(err, domain.ErrTaskNotFound) {
 			return status.NewErr(http.StatusNotFound, err.Error())
@@ -85,6 +89,8 @@ func (u *taskUsecase) UpdateTask(ctx context.Context, in dto.UpdateTaskInput) (e
 }
 
 func (u *taskUsecase) ChangeStage(ctx context.Context, in dto.TaskStageInput) (err error) {
+	taskID := uuid.MustParse(in.ID)
+
 	ctx, err = tx.NewAtomic(ctx, tx.AtomicOpts{
 		ReadOnly:    false,
 		DataSources: []any{u.taskRepository},
@@ -94,13 +100,13 @@ func (u *taskUsecase) ChangeStage(ctx context.Context, in dto.TaskStageInput) (e
 	}
 	defer tx.Evaluate(ctx, &err)
 
-	ctx, release, err := u.lock.Acquire(ctx, "task", in.ID.String())
+	ctx, release, err := u.lock.Acquire(ctx, "task", taskID.String())
 	if err != nil {
 		return errors.Wrap(err, "acquiring lock")
 	}
 	defer release()
 
-	task, err := u.taskRepository.FetchByID(ctx, in.ID)
+	task, err := u.taskRepository.FetchByID(ctx, taskID)
 	if err != nil {
 		if errors.Is(err, domain.ErrTaskNotFound) {
 			return status.NewErr(http.StatusNotFound, err.Error())

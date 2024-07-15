@@ -40,10 +40,12 @@ func NewSubmissionUsecase(
 }
 
 func (u *submissionUsecase) GetList(ctx context.Context, in dto.SubmissionListInput) (out *dto.SubmissionListOutput, err error) {
+	taskID := uuid.MustParse(in.ID)
+
 	// TODO: Change this to actual value.
 	const submissionLimit = 20
 
-	submissions, err := u.submissionRepository.FetchPaginated(ctx, in.ID, in.Offset, submissionLimit)
+	submissions, err := u.submissionRepository.FetchPaginated(ctx, taskID, in.Offset, submissionLimit)
 	if err != nil {
 		return nil, errors.Wrap(err, "fetching submissions")
 	}
@@ -52,6 +54,8 @@ func (u *submissionUsecase) GetList(ctx context.Context, in dto.SubmissionListIn
 }
 
 func (u *submissionUsecase) Submit(ctx context.Context, in dto.SubmissionInput) (out *dto.IDOutput, err error) {
+	taskID := uuid.MustParse(in.ID)
+
 	ctx, err = tx.NewAtomic(ctx, tx.AtomicOpts{
 		ReadOnly: false,
 		DataSources: []any{
@@ -65,15 +69,13 @@ func (u *submissionUsecase) Submit(ctx context.Context, in dto.SubmissionInput) 
 	}
 	defer tx.Evaluate(ctx, &err)
 
-	ctx, release, err := u.lock.Acquire(ctx, "task", in.ID.String())
+	ctx, release, err := u.lock.Acquire(ctx, "task", taskID.String())
 	if err != nil {
 		return nil, errors.Wrap(err, "acquiring lock")
 	}
 	defer release()
 
 	info := auth.MustExtract(ctx)
-
-	taskID := in.ID
 
 	task, err := u.taskRepository.FetchByID(ctx, taskID)
 	if err != nil {
@@ -127,6 +129,9 @@ func (u *submissionUsecase) Submit(ctx context.Context, in dto.SubmissionInput) 
 }
 
 func (u *submissionUsecase) DecideApproval(ctx context.Context, in dto.SubmissionDecisionInput) (err error) {
+	taskID := uuid.MustParse(in.TaskID)
+	submissionID := uuid.MustParse(in.SubmissionID)
+
 	ctx, err = tx.NewAtomic(ctx, tx.AtomicOpts{
 		ReadOnly: false,
 		DataSources: []any{
@@ -140,17 +145,17 @@ func (u *submissionUsecase) DecideApproval(ctx context.Context, in dto.Submissio
 	}
 	defer tx.Evaluate(ctx, &err)
 
-	ctx, release, err := u.lock.Acquire(ctx, "task", in.TaskID.String())
+	ctx, release, err := u.lock.Acquire(ctx, "task", taskID.String())
 	if err != nil {
 		return errors.Wrap(err, "acquiring lock")
 	}
 	defer release()
 
-	if err := u.assureTaskExists(ctx, in.TaskID); err != nil {
+	if err := u.assureTaskExists(ctx, taskID); err != nil {
 		return err
 	}
 
-	submission, err := u.submissionRepository.FetchByID(ctx, in.SubmissionID)
+	submission, err := u.submissionRepository.FetchByID(ctx, submissionID)
 	if err != nil {
 		if errors.Is(err, domain.ErrSubmissionNotFound) {
 			return status.NewErr(http.StatusNotFound, err.Error())
@@ -188,6 +193,9 @@ func (u *submissionUsecase) DecideApproval(ctx context.Context, in dto.Submissio
 }
 
 func (u *submissionUsecase) Cancel(ctx context.Context, in dto.SubmissionIDInput) (err error) {
+	taskID := uuid.MustParse(in.TaskID)
+	submissionID := uuid.MustParse(in.SubmissionID)
+
 	ctx, err = tx.NewAtomic(ctx, tx.AtomicOpts{
 		ReadOnly: false,
 		DataSources: []any{
@@ -201,7 +209,7 @@ func (u *submissionUsecase) Cancel(ctx context.Context, in dto.SubmissionIDInput
 	}
 	defer tx.Evaluate(ctx, &err)
 
-	ctx, release, err := u.lock.Acquire(ctx, "task", in.TaskID.String())
+	ctx, release, err := u.lock.Acquire(ctx, "task", taskID.String())
 	if err != nil {
 		return errors.Wrap(err, "acquiring lock")
 	}
@@ -209,11 +217,11 @@ func (u *submissionUsecase) Cancel(ctx context.Context, in dto.SubmissionIDInput
 
 	info := auth.MustExtract(ctx)
 
-	if err := u.assureTaskExists(ctx, in.TaskID); err != nil {
+	if err := u.assureTaskExists(ctx, taskID); err != nil {
 		return err
 	}
 
-	submission, err := u.submissionRepository.FetchByID(ctx, in.SubmissionID)
+	submission, err := u.submissionRepository.FetchByID(ctx, submissionID)
 	if err != nil {
 		if errors.Is(err, domain.ErrSubmissionNotFound) {
 			return status.NewErr(http.StatusNotFound, err.Error())

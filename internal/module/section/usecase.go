@@ -31,7 +31,9 @@ func NewSectionUsecase(sr domain.SectionRepository, tr domain.TaskRepository, l 
 }
 
 func (s *sectionUsecase) GetList(ctx context.Context, in dto.IDInput) (out *dto.SectionListOutput, err error) {
-	if err := s.assureTaskExists(ctx, in.ID); err != nil {
+	taskID := uuid.MustParse(in.ID)
+
+	if err := s.assureTaskExists(ctx, taskID); err != nil {
 		return nil, err
 	}
 
@@ -39,7 +41,7 @@ func (s *sectionUsecase) GetList(ctx context.Context, in dto.IDInput) (out *dto.
 		IncludeContent: true,
 	}
 
-	sections, err := s.sectionRepository.FetchAllByTaskID(ctx, in.ID, fetchOpts)
+	sections, err := s.sectionRepository.FetchAllByTaskID(ctx, taskID, fetchOpts)
 	if err != nil {
 		return nil, errors.Wrap(err, "fetching sections")
 	}
@@ -48,6 +50,8 @@ func (s *sectionUsecase) GetList(ctx context.Context, in dto.IDInput) (out *dto.
 }
 
 func (s *sectionUsecase) CreateSection(ctx context.Context, in dto.CreateSectionInput) (err error) {
+	taskID := uuid.MustParse(in.ID)
+
 	ctx, err = tx.NewAtomic(ctx, tx.AtomicOpts{
 		ReadOnly: false,
 		DataSources: []any{
@@ -60,13 +64,11 @@ func (s *sectionUsecase) CreateSection(ctx context.Context, in dto.CreateSection
 	}
 	defer tx.Evaluate(ctx, &err)
 
-	ctx, release, err := s.lock.Acquire(ctx, "task", in.ID.String())
+	ctx, release, err := s.lock.Acquire(ctx, "task", taskID.String())
 	if err != nil {
 		return errors.Wrap(err, "acquiring lock")
 	}
 	defer release()
-
-	taskID := in.ID
 
 	if err := s.assureTaskExists(ctx, taskID); err != nil {
 		return err
@@ -107,11 +109,11 @@ func (s *sectionUsecase) UpdateSection(ctx context.Context, in dto.UpdateSection
 	}
 	defer tx.Evaluate(ctx, &err)
 
-	if err := s.assureTaskExists(ctx, in.TaskID); err != nil {
+	if err := s.assureTaskExists(ctx, uuid.MustParse(in.TaskID)); err != nil {
 		return err
 	}
 
-	section, err := s.sectionRepository.FetchByID(ctx, in.SectionID)
+	section, err := s.sectionRepository.FetchByID(ctx, uuid.MustParse(in.SectionID))
 	if err != nil {
 		if errors.Is(err, domain.ErrSectionNotFound) {
 			return status.NewErr(http.StatusNotFound, err.Error())
@@ -134,6 +136,8 @@ func (s *sectionUsecase) UpdateSection(ctx context.Context, in dto.UpdateSection
 }
 
 func (s *sectionUsecase) ChangeIndex(ctx context.Context, in dto.SectionIndexInput) (err error) {
+	taskID := uuid.MustParse(in.TaskID)
+
 	ctx, err = tx.NewAtomic(ctx, tx.AtomicOpts{
 		ReadOnly: false,
 		DataSources: []any{
@@ -146,13 +150,13 @@ func (s *sectionUsecase) ChangeIndex(ctx context.Context, in dto.SectionIndexInp
 	}
 	defer tx.Evaluate(ctx, &err)
 
-	ctx, release, err := s.lock.Acquire(ctx, "task", in.TaskID.String())
+	ctx, release, err := s.lock.Acquire(ctx, "task", taskID.String())
 	if err != nil {
 		return errors.Wrap(err, "acquiring lock")
 	}
 	defer release()
 
-	if err := s.assureTaskExists(ctx, in.TaskID); err != nil {
+	if err := s.assureTaskExists(ctx, taskID); err != nil {
 		return err
 	}
 
@@ -160,7 +164,7 @@ func (s *sectionUsecase) ChangeIndex(ctx context.Context, in dto.SectionIndexInp
 		IncludeContent: false,
 	}
 
-	sections, err := s.sectionRepository.FetchAllByTaskID(ctx, in.TaskID, fetchOpts)
+	sections, err := s.sectionRepository.FetchAllByTaskID(ctx, taskID, fetchOpts)
 	if err != nil {
 		return errors.Wrap(err, "fetching sections")
 	}
@@ -172,8 +176,9 @@ func (s *sectionUsecase) ChangeIndex(ctx context.Context, in dto.SectionIndexInp
 		return status.NewErr(http.StatusForbidden, "index out of range")
 	}
 
+	sectionID := uuid.MustParse(in.SectionID)
 	idxFunc := func(section domain.Section) bool {
-		return section.ID == in.SectionID
+		return section.ID == sectionID
 	}
 
 	curIdx := slices.IndexFunc(sections, idxFunc)

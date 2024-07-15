@@ -1,18 +1,16 @@
 package dto
 
-import "github.com/google/uuid"
-
 type UserInfo struct {
-	ID         uuid.UUID `json:"id"`
-	Username   string    `json:"username"`
-	ProfileURL string    `json:"profileURL"`
-	Role       string    `json:"role"`
+	ID         string `json:"id" binding:"uuid"`
+	Username   string `json:"username"`
+	ProfileURL string `json:"profileURL"`
+	Role       string `json:"role"`
 }
 
 type IDInput struct {
-	ID uuid.UUID `uri:"id" binding:"required"`
+	ID string `uri:"id" binding:"required,uuid"`
 }
 
 type IDOutput struct {
-	ID uuid.UUID `json:"id"`
+	ID string `json:"id" binding:"uuid"`
 }

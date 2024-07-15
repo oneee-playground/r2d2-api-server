@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/google/uuid"
 	"github.com/oneee-playground/r2d2-api-server/internal/domain"
 	"github.com/oneee-playground/r2d2-api-server/internal/domain/dto"
 	"github.com/oneee-playground/r2d2-api-server/internal/global/status"
@@ -106,6 +107,7 @@ func (s *ResourceUsecaseSuite) TestCreateResource() {
 			tc.setup()
 
 			err := s.usecase.CreateResource(ctx, dto.CreateResourceInput{
+				IDInput:       dto.IDInput{ID: uuid.Nil.String()},
 				ResourceInput: dto.ResourceInput{IsPrimary: new(bool)},
 			})
 			s.True(tc.checkErr(err), err)
@@ -175,7 +177,7 @@ func (s *ResourceUsecaseSuite) TestDeleteResource() {
 
 			tc.setup()
 
-			err := s.usecase.DeleteResource(ctx, dto.ResourceIDInput{})
+			err := s.usecase.DeleteResource(ctx, dto.ResourceIDInput{IDInput: dto.IDInput{ID: uuid.Nil.String()}})
 			s.True(tc.checkErr(err), err)
 		})
 	}

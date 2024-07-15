@@ -117,7 +117,7 @@ func (s *SubmissionUsecaseSuite) TestSubmit() {
 		s.Run(tc.desc, func() {
 			tc.setup()
 
-			_, err := s.usecase.Submit(ctx, dto.SubmissionInput{})
+			_, err := s.usecase.Submit(ctx, dto.SubmissionInput{IDInput: dto.IDInput{ID: uuid.Nil.String()}})
 			s.True(tc.checkErr(err), err)
 		})
 	}
@@ -208,6 +208,10 @@ func (s *SubmissionUsecaseSuite) TestDecideApproval() {
 			tc.setup()
 
 			in := dto.SubmissionDecisionInput{
+				SubmissionIDInput: dto.SubmissionIDInput{
+					TaskID:       uuid.Nil.String(),
+					SubmissionID: uuid.Nil.String(),
+				},
 				Action: string(tc.action),
 			}
 
@@ -338,7 +342,10 @@ func (s *SubmissionUsecaseSuite) TestCancel() {
 
 			ctx = auth.Inject(ctx, tc.userInfo)
 
-			err := s.usecase.Cancel(ctx, dto.SubmissionIDInput{})
+			err := s.usecase.Cancel(ctx, dto.SubmissionIDInput{
+				TaskID:       uuid.Nil.String(),
+				SubmissionID: uuid.Nil.String(),
+			})
 			s.True(tc.checkErr(err), err)
 		})
 	}

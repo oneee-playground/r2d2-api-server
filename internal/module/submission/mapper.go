@@ -12,12 +12,12 @@ func toSubmissionListOutput(submissions []domain.Submission) *dto.SubmissionList
 		url := "https://github.com/" + submission.Repository
 
 		out[i] = dto.SubmissionListElem{
-			ID:        submission.ID,
+			ID:        submission.ID.String(),
 			Timestamp: submission.Timestamp,
 			IsDone:    submission.IsDone,
 			SourceURL: url,
 			User: dto.UserInfo{
-				ID:         submission.User.ID,
+				ID:         submission.User.ID.String(),
 				Username:   submission.User.Username,
 				ProfileURL: submission.User.ProfileURL,
 				Role:       submission.User.Role.String(),
@@ -30,6 +30,6 @@ func toSubmissionListOutput(submissions []domain.Submission) *dto.SubmissionList
 
 func toIDOutput(submission domain.Submission) *dto.IDOutput {
 	return &dto.IDOutput{
-		ID: submission.ID,
+		ID: submission.ID.String(),
 	}
 }

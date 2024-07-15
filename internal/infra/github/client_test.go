@@ -39,7 +39,7 @@ func (s *GitHubClientSuote) TestIssueAccessToken() {
 	s.mockTransport.RegisterResponder(http.MethodPost,
 		"https://github.com/login/oauth/access_token",
 		func(r *http.Request) (*http.Response, error) {
-			if r.URL.Query().Get("op") == validCode {
+			if r.URL.Query().Get("code") == validCode {
 				return httpmock.NewStringResponse(http.StatusOK, `
 				{
 					"access_token": "token",

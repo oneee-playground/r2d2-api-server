@@ -4,6 +4,7 @@ import (
 	"context"
 	"sort"
 
+	"github.com/google/uuid"
 	"github.com/oneee-playground/r2d2-api-server/internal/domain"
 	"github.com/oneee-playground/r2d2-api-server/internal/domain/dto"
 	"github.com/pkg/errors"
@@ -20,7 +21,9 @@ func NewEventUsecase(er domain.EventRepository) *eventUsecase {
 }
 
 func (u *eventUsecase) GetAllFromSubmission(ctx context.Context, in dto.SubmissionIDInput) (out *dto.EventListOutput, err error) {
-	events, err := u.eventRepository.FetchAllBySubmissionID(ctx, in.SubmissionID)
+	submissionID := uuid.MustParse(in.SubmissionID)
+
+	events, err := u.eventRepository.FetchAllBySubmissionID(ctx, submissionID)
 	if err != nil {
 		return nil, errors.Wrap(err, "fetching events")
 	}
