@@ -2,7 +2,9 @@ package http
 
 import (
 	"fmt"
+	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/oneee-playground/r2d2-api-server/internal/domain"
 	"github.com/oneee-playground/r2d2-api-server/internal/infra/http/handler"
@@ -46,6 +48,13 @@ func (r *Router) Build() {
 
 	router.Use(
 		requestLogger.Log,
+		cors.New(cors.Config{
+			AllowAllOrigins:  true,
+			AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
+			AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type"},
+			AllowCredentials: false,
+			MaxAge:           12 * time.Hour,
+		}),
 		errorHandler.RecoverPanic,
 		errorHandler.CatchWithStatusCode,
 	)
