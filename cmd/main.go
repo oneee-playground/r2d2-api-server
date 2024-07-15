@@ -63,7 +63,7 @@ func main() {
 
 	// etc.
 	var (
-		tokenManager = jwt_token.NewManager(jwt.SigningMethodHS256, config.GetJWTConfig().Secret)
+		tokenManager = jwt_token.NewManager(jwt.SigningMethodHS256, []byte(config.GetJWTConfig().Secret))
 		oauthClient  = github.NewClient(http.DefaultClient, logger, config.GetGitHubConfig().ClientID, config.GetGitHubConfig().ClientSecret)
 		emailSender  = email.NewGomailSender(logger, email.GomailOptions{
 			Host:     emailConfig.Host,
