@@ -25,7 +25,7 @@ func (h *SubmissionHandler) HandleGetList(c *gin.Context) {
 		return
 	}
 
-	if err := c.ShouldBindQuery(&in); err != nil {
+	if err := c.ShouldBindQuery(&in.SubmissionPaginator); err != nil {
 		c.Error(util.WrapWithBadRequest(err))
 		return
 	}

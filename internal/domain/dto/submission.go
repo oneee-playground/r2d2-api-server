@@ -5,7 +5,7 @@ import (
 )
 
 type SubmissionPaginator struct {
-	Offset int `form:"offset" binding:"required"`
+	Offset int `form:"offset"`
 }
 
 type SubmissionListInput struct {
