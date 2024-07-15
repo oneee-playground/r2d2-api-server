@@ -3,12 +3,10 @@ package github
 import (
 	"context"
 	"net/http"
-	"strings"
 	"testing"
 
 	"github.com/jarcoal/httpmock"
 	auth_module "github.com/oneee-playground/r2d2-api-server/internal/module/auth"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/zap"
 )
@@ -41,7 +39,7 @@ func (s *GitHubClientSuote) TestIssueAccessToken() {
 	s.mockTransport.RegisterResponder(http.MethodPost,
 		"https://github.com/login/oauth/access_token",
 		func(r *http.Request) (*http.Response, error) {
-			if r.URL.Query().Get("code") == validCode {
+			if r.URL.Query().Get("op") == validCode {
 				return httpmock.NewStringResponse(http.StatusOK, `
 				{
 					"access_token": "token",
@@ -83,12 +81,4 @@ func (s *GitHubClientSuote) TestIssueAccessToken() {
 			s.Equal(tc.err, err)
 		})
 	}
-}
-
-func TestScopeValid(t *testing.T) {
-	required := []string{"hi", "there", "test"}
-
-	assert.True(t, scopeValid(required, strings.Join(required, ",")))
-	assert.True(t, scopeValid(required, strings.Join(append(required, "aef"), ",")))
-	assert.False(t, scopeValid(required, strings.Join(required, ",")[:2]))
 }

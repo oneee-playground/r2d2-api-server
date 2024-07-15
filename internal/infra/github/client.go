@@ -5,16 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"slices"
-	"strings"
 
 	"github.com/oneee-playground/r2d2-api-server/internal/domain"
 	auth_module "github.com/oneee-playground/r2d2-api-server/internal/module/auth"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
-
-var requiredScopes = []string{"read:user", "user:email"}
 
 // Client is github-specific oauth client.
 type Client struct {
@@ -64,10 +60,6 @@ func (c *Client) IssueAccessToken(ctx context.Context, code string) (string, err
 		}
 
 		return "", errors.Errorf("unexpected error response from github: %s", decoded.Error)
-	}
-
-	if !scopeValid(requiredScopes, decoded.Scope) {
-		return "", auth_module.ErrNotEnoughScope
 	}
 
 	return decoded.Token, nil
@@ -121,19 +113,4 @@ func sendRequest[T any](httpClient *http.Client, req *http.Request, val *T) erro
 	}
 
 	return nil
-}
-
-// scopeValid checks if splitted scopes contains all the required scopes.
-func scopeValid(required []string, scope string) bool {
-	scopes := strings.Split(scope, ",")
-
-	i := 0
-
-	for _, scope := range scopes {
-		if slices.Contains(required, scope) {
-			i++
-		}
-	}
-
-	return i >= len(required)
 }
