@@ -51,7 +51,7 @@ func (r *Router) Build() {
 		cors.New(cors.Config{
 			AllowAllOrigins:  true,
 			AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
-			AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type"},
+			AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
 			AllowCredentials: false,
 			MaxAge:           12 * time.Hour,
 		}),
