@@ -47,6 +47,7 @@ func (r *SectionRepository) Create(ctx context.Context, section domain.Section) 
 		SetTitle(section.Title).
 		SetType(string(section.Type)).
 		SetRpm(section.RPM).
+		SetExample(section.Example).
 		SetTaskID(section.TaskID).
 		Exec(ctx)
 }
