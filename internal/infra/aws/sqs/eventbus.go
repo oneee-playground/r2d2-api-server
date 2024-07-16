@@ -138,7 +138,10 @@ func (b *SQSEventBus) listenTopic(ctx context.Context, wg *sync.WaitGroup, topic
 				}
 			}
 
-			_, err = b.client.DeleteMessageBatch(ctx, &sqs.DeleteMessageBatchInput{Entries: entries})
+			_, err = b.client.DeleteMessageBatch(ctx, &sqs.DeleteMessageBatchInput{
+				QueueUrl: aws.String(queue.URL),
+				Entries:  entries,
+			})
 			if err != nil {
 				b.logger.Error("failed to delete messages",
 					zap.String("topic", string(topic)),
