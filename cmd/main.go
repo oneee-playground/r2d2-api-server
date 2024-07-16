@@ -102,6 +102,8 @@ func main() {
 		},
 	})
 
+	go eventBus.Listen(ctx)
+
 	mysqlConf := config.GetMYSQLConfig()
 
 	entClient, err := model.Open("mysql", fmt.Sprintf("root:%s@tcp(%s)/r2d2?parseTime=true", mysqlConf.Pass, mysqlConf.Addr))
