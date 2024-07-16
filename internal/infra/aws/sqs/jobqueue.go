@@ -36,8 +36,9 @@ func (q *SQSJobQueue) Append(ctx context.Context, job *exec_module.Job) error {
 	}
 
 	input := &sqs.SendMessageInput{
-		QueueUrl:    aws.String(q.queueURL),
-		MessageBody: aws.String(string(payload)),
+		QueueUrl:       aws.String(q.queueURL),
+		MessageBody:    aws.String(string(payload)),
+		MessageGroupId: aws.String("abcd"),
 	}
 
 	if _, err := q.client.SendMessage(ctx, input); err != nil {
