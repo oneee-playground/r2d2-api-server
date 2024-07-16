@@ -11,7 +11,7 @@ import (
 type BuildOpts struct {
 	ID         uuid.UUID `json:"id"`
 	TaskID     uuid.UUID `json:"taskID"`
-	Repository string    `json:"repositoy"`
+	Repository string    `json:"repository"`
 	CommitHash string    `json:"commitHash"`
 	Platform   string    `json:"platform"`
 }
