@@ -35,6 +35,8 @@ func (q *SQSJobQueue) Append(ctx context.Context, job *exec_module.Job) error {
 		return errors.Wrap(err, "marshalling payload")
 	}
 
+	q.logger.Info("payload", zap.String("payload", string(payload)))
+
 	input := &sqs.SendMessageInput{
 		QueueUrl:       aws.String(q.queueURL),
 		MessageBody:    aws.String(string(payload)),
