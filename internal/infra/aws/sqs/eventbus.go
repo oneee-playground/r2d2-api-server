@@ -133,7 +133,8 @@ func (b *SQSEventBus) listenTopic(ctx context.Context, wg *sync.WaitGroup, topic
 				}
 
 				entries[idx] = types.DeleteMessageBatchRequestEntry{
-					Id: message.MessageId,
+					Id:            message.MessageId,
+					ReceiptHandle: message.ReceiptHandle,
 				}
 			}
 
