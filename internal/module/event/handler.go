@@ -30,7 +30,8 @@ func NewEventHandler(
 
 func (h *EventHandler) Register(ctx context.Context, subscriber event.Subscriber) error {
 	if err := subscriber.Subscribe(ctx, event.TopicSubmission,
-		h.SendNotificationEmail, h.StoreEvent,
+		h.StoreEvent,
+		// h.SendNotificationEmail,
 	); err != nil {
 		return err
 	}
